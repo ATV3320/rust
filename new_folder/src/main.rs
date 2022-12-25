@@ -37,4 +37,28 @@ fn main() {
     println!("check 3, value of s is {}", s);
     //so we can say that in this case, only one reference of r is accessed at both times,
     //but s was accessed differently.
+
+
+    const SECONDS_IN_A_MINUTE:i32 = 60;
+    println!("value of seconds is {}", SECONDS_IN_A_MINUTE);
+
+    let tup: (i32, bool, char) = (1, true, 'a');
+    println!("{}", tup.1);
+
+    let mut tup1: (i32, bool, char) = (1, true, 'a');
+    println!("{}", tup1.1);
+    tup1.1 = false;
+    println!("{}", tup1.1);
+
+    //arrays are crazier tho, 
+    let arr0 = [1, 2, 3];
+    println!("{}", arr0[1]);
+    //we have to make them mutable in order to change the elements inside,
+    // character of the array is the type of datatype in it and the size.
+    let mut arr1: [i64; 5];
+    // println!("{}", arr1[1]);
+    //gives error, there is no automatic initialization.
+    //even if i equate it to an empty array.
+    arr1 = [2, 3, 4, 5, 6];
+    println!("{}", arr1[4]);
 }
