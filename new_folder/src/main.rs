@@ -1,3 +1,6 @@
+use std::io;
+
+
 fn main() {
     println!("Really sorry that I'm doing this still.");
     let mut p = 5;
@@ -61,4 +64,38 @@ fn main() {
     //even if i equate it to an empty array.
     arr1 = [2, 3, 4, 5, 6];
     println!("{}", arr1[4]);
+
+    let mut input = String::new();
+
+    io::stdin().read_line(&mut input).expect("Failed to read line");
+    println!("Will hit it with a {}", input);
+    //we will have to put String::new() whenever we want to input something,  (in case of read_line)
+
+    //arithmetic
+    let x: u8 = 55;
+    let y: u8 = 10;
+    // let mut z = x + y; no implementation for adding i8 and u8
+    // println!("Adding those different x and y: {}", z);
+    //it also handles overflow pretty well here.. 
+    let mut z = x / y;
+    println!("{}", z);
+
+    let p:i64 = 125_000;
+    let q:i32 = 500;
+    //now I wanna typecast.
+
+    let mut r = p / (q as i64);
+    println!("{}",r);
+
+    //so, rust does not automatically convert types.
+
+    //like we talked above, what if we want to take an integer as input, how would we convert a string to integer? 
+    //this is how..
+    let mut integer1 = String::new();
+    io::stdin().read_line(&mut integer1).expect("Expect to read line");
+
+    let int_input:i64 = integer1.trim().parse().unwrap();
+    //trim removes invisible characters, parse checks for integer, unwrap converts that data into integer.
+
+    println!("{}", int_input+20);
 }
