@@ -1,7 +1,9 @@
 use core::num;
+pub mod trialFile1;
 use std::io;
 
 fn main() {
+    trialFile1::main();
     println!("Really sorry that I'm doing this still.");
     let mut p = 5;
     println!("Print the value of p: {}", p);
