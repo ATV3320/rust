@@ -1,0 +1,4 @@
+Dec27
+So, like many other people I'm starting rust, but I don't think jumping into the contracts is the right
+choice just yet, so I'll be doing some hardcore stuff (mostly copied🥹) which actually helps me
+own the power of rust.
