@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["load_font_file","Loads a font file into a `Vec<u8>`"]],"mod":[["fontconfig","A module that contains functions and objects relating to fontconfig"]],"struct":[["Text","A drawable object that represents text"]]};

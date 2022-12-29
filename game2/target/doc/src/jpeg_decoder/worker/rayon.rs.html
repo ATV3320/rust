@@ -1,0 +1,444 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/jpeg-decoder-0.3.0/src/worker/rayon.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rayon.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../jpeg_decoder/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+</pre><pre class="rust"><code><span class="kw">use </span>core::convert::TryInto;
+
+<span class="kw">use </span>rayon::iter::{IndexedParallelIterator, ParallelIterator};
+<span class="kw">use </span>rayon::slice::ParallelSliceMut;
+
+<span class="kw">use </span><span class="kw">crate</span>::decoder::{choose_color_convert_func, ColorTransform};
+<span class="kw">use </span><span class="kw">crate</span>::error::Result;
+<span class="kw">use </span><span class="kw">crate</span>::idct::dequantize_and_idct_block;
+<span class="kw">use </span><span class="kw">crate</span>::parser::Component;
+<span class="kw">use </span><span class="kw">crate</span>::upsampler::Upsampler;
+<span class="kw">use crate</span>::{decoder::MAX_COMPONENTS, parser::Dimensions};
+
+<span class="kw">use </span>std::sync::Arc;
+
+<span class="kw">use super</span>::{RowData, Worker};
+
+<span class="doccomment">/// Technically similar to `immediate::ImmediateWorker` but we copy it since we may prefer
+/// different style of managing the memory allocation, something that multiple actors can access in
+/// parallel.
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">struct </span>ImmediateWorker {
+    offsets: [usize; MAX_COMPONENTS],
+    results: [Vec&lt;u8&gt;; MAX_COMPONENTS],
+    components: [<span class="prelude-ty">Option</span>&lt;Component&gt;; MAX_COMPONENTS],
+    quantization_tables: [<span class="prelude-ty">Option</span>&lt;Arc&lt;[u16; <span class="number">64</span>]&gt;&gt;; MAX_COMPONENTS],
+}
+
+<span class="attribute">#[derive(Clone, Copy)]
+</span><span class="kw">struct </span>ComponentMetadata {
+    block_width: usize,
+    block_count: usize,
+    line_stride: usize,
+    dct_scale: usize,
+}
+
+<span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>Scoped {
+    inner: ImmediateWorker,
+}
+
+<span class="kw">impl </span>ImmediateWorker {
+    <span class="kw">pub fn </span>start_immediate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: RowData) {
+        <span class="kw">let </span>elements = data.component.block_size.width <span class="kw">as </span>usize
+            * data.component.block_size.height <span class="kw">as </span>usize
+            * data.component.dct_scale
+            * data.component.dct_scale;
+        <span class="self">self</span>.offsets[data.index] = <span class="number">0</span>;
+        <span class="self">self</span>.results[data.index].resize(elements, <span class="number">0u8</span>);
+        <span class="self">self</span>.components[data.index] = <span class="prelude-val">Some</span>(data.component);
+        <span class="self">self</span>.quantization_tables[data.index] = <span class="prelude-val">Some</span>(data.quantization_table);
+    }
+
+    <span class="kw">pub fn </span>get_result_immediate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: usize) -&gt; Vec&lt;u8&gt; {
+        core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.results[index])
+    }
+
+    <span class="kw">pub fn </span>component_metadata(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Option</span>&lt;ComponentMetadata&gt; {
+        <span class="kw">let </span>component = <span class="self">self</span>.components[index].as_ref()<span class="question-mark">?</span>;
+        <span class="kw">let </span>block_size = component.block_size;
+        <span class="kw">let </span>block_width = block_size.width <span class="kw">as </span>usize;
+        <span class="kw">let </span>block_count = block_size.width <span class="kw">as </span>usize * component.vertical_sampling_factor <span class="kw">as </span>usize;
+        <span class="kw">let </span>line_stride = block_size.width <span class="kw">as </span>usize * component.dct_scale;
+        <span class="kw">let </span>dct_scale = component.dct_scale;
+
+        <span class="prelude-val">Some</span>(ComponentMetadata {
+            block_width,
+            block_count,
+            line_stride,
+            dct_scale,
+        })
+    }
+
+    <span class="kw">pub fn </span>append_row_locked(
+        quantization_table: Arc&lt;[u16; <span class="number">64</span>]&gt;,
+        metadata: ComponentMetadata,
+        data: Vec&lt;i16&gt;,
+        result_block: <span class="kw-2">&amp;mut </span>[u8],
+    ) {
+        <span class="comment">// Convert coefficients from a MCU row to samples.
+        </span><span class="kw">let </span>ComponentMetadata {
+            block_count,
+            line_stride,
+            block_width,
+            dct_scale,
+        } = metadata;
+
+        <span class="macro">assert_eq!</span>(data.len(), block_count * <span class="number">64</span>);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>output_buffer = [<span class="number">0</span>; <span class="number">64</span>];
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..block_count {
+            <span class="kw">let </span>x = (i % block_width) * dct_scale;
+            <span class="kw">let </span>y = (i / block_width) * dct_scale;
+
+            <span class="kw">let </span>coefficients: <span class="kw-2">&amp;</span>[i16; <span class="number">64</span>] = <span class="kw-2">&amp;</span>data[i * <span class="number">64</span>..(i + <span class="number">1</span>) * <span class="number">64</span>].try_into().unwrap();
+
+            <span class="comment">// Write to a temporary intermediate buffer, a 8x8 &#39;image&#39;.
+            </span>dequantize_and_idct_block(
+                dct_scale,
+                coefficients,
+                <span class="kw-2">&amp;*</span>quantization_table,
+                <span class="number">8</span>,
+                <span class="kw-2">&amp;mut </span>output_buffer,
+            );
+
+            <span class="kw">let </span>write_back = <span class="kw-2">&amp;mut </span>result_block[y * line_stride + x..];
+
+            <span class="kw">let </span>buffered_lines = output_buffer.chunks_mut(<span class="number">8</span>);
+            <span class="kw">let </span>back_lines = write_back.chunks_mut(line_stride);
+
+            <span class="kw">for </span>(buf, back) <span class="kw">in </span>buffered_lines.zip(back_lines).take(dct_scale) {
+                back[..dct_scale].copy_from_slice(<span class="kw-2">&amp;</span>buf[..dct_scale]);
+            }
+        }
+    }
+}
+
+<span class="kw">impl </span>Worker <span class="kw">for </span>Scoped {
+    <span class="kw">fn </span>start(<span class="kw-2">&amp;mut </span><span class="self">self</span>, row_data: RowData) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.inner.start_immediate(row_data);
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">fn </span>append_row(<span class="kw-2">&amp;mut </span><span class="self">self</span>, row: (usize, Vec&lt;i16&gt;)) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>inner = <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner;
+        <span class="kw">let </span>(index, data) = row;
+
+        <span class="kw">let </span>quantization_table = inner.quantization_tables[index].as_ref().unwrap().clone();
+        <span class="kw">let </span>metadata = inner.component_metadata(index).unwrap();
+        <span class="kw">let </span>result_block = <span class="kw-2">&amp;mut </span>inner.results[index][inner.offsets[index]..];
+        inner.offsets[index] += metadata.bytes_used();
+
+        ImmediateWorker::append_row_locked(quantization_table, metadata, data, result_block);
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">fn </span>get_result(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;&gt; {
+        <span class="kw">let </span>result = <span class="self">self</span>.inner.get_result_immediate(index);
+        <span class="prelude-val">Ok</span>(result)
+    }
+
+    <span class="comment">// Magic sauce, these _may_ run in parallel.
+    </span><span class="kw">fn </span>append_rows(<span class="kw-2">&amp;mut </span><span class="self">self</span>, iter: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Iterator&lt;Item = (usize, Vec&lt;i16&gt;)&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>inner = <span class="kw-2">&amp;mut </span><span class="self">self</span>.inner;
+        rayon::in_place_scope(|scope| {
+            <span class="kw">let </span>metadatas = [
+                inner.component_metadata(<span class="number">0</span>),
+                inner.component_metadata(<span class="number">1</span>),
+                inner.component_metadata(<span class="number">2</span>),
+                inner.component_metadata(<span class="number">3</span>),
+            ];
+
+            <span class="kw">let </span>[res0, res1, res2, res3] = <span class="kw-2">&amp;mut </span>inner.results;
+
+            <span class="comment">// Lazily get the blocks. Note: if we&#39;ve already collected results from a component
+            // then the result vector has already been deallocated/taken. But no more tasks should
+            // be created for it.
+            </span><span class="kw">let </span><span class="kw-2">mut </span>result_blocks = [
+                res0.get_mut(inner.offsets[<span class="number">0</span>]..).unwrap_or(<span class="kw-2">&amp;mut </span>[]),
+                res1.get_mut(inner.offsets[<span class="number">1</span>]..).unwrap_or(<span class="kw-2">&amp;mut </span>[]),
+                res2.get_mut(inner.offsets[<span class="number">2</span>]..).unwrap_or(<span class="kw-2">&amp;mut </span>[]),
+                res3.get_mut(inner.offsets[<span class="number">3</span>]..).unwrap_or(<span class="kw-2">&amp;mut </span>[]),
+            ];
+
+            <span class="comment">// First we schedule everything, making sure their index is right etc.
+            </span><span class="kw">for </span>(index, data) <span class="kw">in </span>iter {
+                <span class="kw">let </span>metadata = metadatas[index].unwrap();
+                <span class="kw">let </span>quantization_table = inner.quantization_tables[index].as_ref().unwrap().clone();
+
+                inner.offsets[index] += metadata.bytes_used();
+                <span class="kw">let </span>(result_block, tail) =
+                    core::mem::take(<span class="kw-2">&amp;mut </span>result_blocks[index]).split_at_mut(metadata.bytes_used());
+                result_blocks[index] = tail;
+
+                scope.spawn(<span class="kw">move </span>|<span class="kw">_</span>| {
+                    ImmediateWorker::append_row_locked(
+                        quantization_table,
+                        metadata,
+                        data,
+                        result_block,
+                    )
+                });
+            }
+        });
+
+        <span class="prelude-val">Ok</span>(())
+    }
+}
+
+<span class="kw">impl </span>ComponentMetadata {
+    <span class="kw">fn </span>bytes_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.block_count * <span class="self">self</span>.dct_scale * <span class="self">self</span>.dct_scale
+    }
+}
+
+<span class="kw">pub fn </span>compute_image_parallel(
+    components: <span class="kw-2">&amp;</span>[Component],
+    data: Vec&lt;Vec&lt;u8&gt;&gt;,
+    output_size: Dimensions,
+    color_transform: ColorTransform,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;&gt; {
+    <span class="kw">let </span>color_convert_func = choose_color_convert_func(components.len(), color_transform)<span class="question-mark">?</span>;
+    <span class="kw">let </span>upsampler = Upsampler::new(components, output_size.width, output_size.height)<span class="question-mark">?</span>;
+    <span class="kw">let </span>line_size = output_size.width <span class="kw">as </span>usize * components.len();
+    <span class="kw">let </span><span class="kw-2">mut </span>image = <span class="macro">vec!</span>[<span class="number">0u8</span>; line_size * output_size.height <span class="kw">as </span>usize];
+
+    image
+        .par_chunks_mut(line_size)
+        .with_max_len(<span class="number">1</span>)
+        .enumerate()
+        .for_each(|(row, line)| {
+            upsampler.upsample_and_interleave_row(
+                <span class="kw-2">&amp;</span>data,
+                row,
+                output_size.width <span class="kw">as </span>usize,
+                line,
+                color_convert_func,
+            );
+        });
+
+    <span class="prelude-val">Ok</span>(image)
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="jpeg_decoder" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

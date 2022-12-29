@@ -1,0 +1,2666 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/x11-dl-2.20.1/src/keysym.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keysym.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../x11_dl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
+<span id="934">934</span>
+<span id="935">935</span>
+<span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
+<span id="942">942</span>
+<span id="943">943</span>
+<span id="944">944</span>
+<span id="945">945</span>
+<span id="946">946</span>
+<span id="947">947</span>
+<span id="948">948</span>
+<span id="949">949</span>
+<span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
+<span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+<span id="1179">1179</span>
+<span id="1180">1180</span>
+<span id="1181">1181</span>
+<span id="1182">1182</span>
+<span id="1183">1183</span>
+<span id="1184">1184</span>
+<span id="1185">1185</span>
+<span id="1186">1186</span>
+<span id="1187">1187</span>
+<span id="1188">1188</span>
+<span id="1189">1189</span>
+<span id="1190">1190</span>
+<span id="1191">1191</span>
+<span id="1192">1192</span>
+<span id="1193">1193</span>
+<span id="1194">1194</span>
+<span id="1195">1195</span>
+<span id="1196">1196</span>
+<span id="1197">1197</span>
+<span id="1198">1198</span>
+<span id="1199">1199</span>
+<span id="1200">1200</span>
+<span id="1201">1201</span>
+<span id="1202">1202</span>
+<span id="1203">1203</span>
+<span id="1204">1204</span>
+<span id="1205">1205</span>
+<span id="1206">1206</span>
+<span id="1207">1207</span>
+<span id="1208">1208</span>
+<span id="1209">1209</span>
+<span id="1210">1210</span>
+<span id="1211">1211</span>
+<span id="1212">1212</span>
+<span id="1213">1213</span>
+<span id="1214">1214</span>
+<span id="1215">1215</span>
+<span id="1216">1216</span>
+<span id="1217">1217</span>
+<span id="1218">1218</span>
+<span id="1219">1219</span>
+<span id="1220">1220</span>
+<span id="1221">1221</span>
+<span id="1222">1222</span>
+<span id="1223">1223</span>
+<span id="1224">1224</span>
+<span id="1225">1225</span>
+<span id="1226">1226</span>
+<span id="1227">1227</span>
+<span id="1228">1228</span>
+<span id="1229">1229</span>
+<span id="1230">1230</span>
+<span id="1231">1231</span>
+<span id="1232">1232</span>
+<span id="1233">1233</span>
+<span id="1234">1234</span>
+<span id="1235">1235</span>
+<span id="1236">1236</span>
+<span id="1237">1237</span>
+<span id="1238">1238</span>
+<span id="1239">1239</span>
+<span id="1240">1240</span>
+<span id="1241">1241</span>
+<span id="1242">1242</span>
+<span id="1243">1243</span>
+<span id="1244">1244</span>
+<span id="1245">1245</span>
+<span id="1246">1246</span>
+<span id="1247">1247</span>
+<span id="1248">1248</span>
+<span id="1249">1249</span>
+<span id="1250">1250</span>
+<span id="1251">1251</span>
+<span id="1252">1252</span>
+<span id="1253">1253</span>
+<span id="1254">1254</span>
+<span id="1255">1255</span>
+<span id="1256">1256</span>
+<span id="1257">1257</span>
+<span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
+<span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+</pre><pre class="rust"><code><span class="comment">// x11-rs: Rust bindings for X11 libraries
+// The X11 libraries are available under the MIT license.
+// These bindings are public domain.
+
+</span><span class="kw">use </span>std::os::raw::c_uint;
+
+<span class="kw">pub const </span>XK_BackSpace: c_uint = <span class="number">0xFF08</span>;
+<span class="kw">pub const </span>XK_Tab: c_uint = <span class="number">0xFF09</span>;
+<span class="kw">pub const </span>XK_Linefeed: c_uint = <span class="number">0xFF0A</span>;
+<span class="kw">pub const </span>XK_Clear: c_uint = <span class="number">0xFF0B</span>;
+<span class="kw">pub const </span>XK_Return: c_uint = <span class="number">0xFF0D</span>;
+<span class="kw">pub const </span>XK_Pause: c_uint = <span class="number">0xFF13</span>;
+<span class="kw">pub const </span>XK_Scroll_Lock: c_uint = <span class="number">0xFF14</span>;
+<span class="kw">pub const </span>XK_Sys_Req: c_uint = <span class="number">0xFF15</span>;
+<span class="kw">pub const </span>XK_Escape: c_uint = <span class="number">0xFF1B</span>;
+<span class="kw">pub const </span>XK_Delete: c_uint = <span class="number">0xFFFF</span>;
+<span class="kw">pub const </span>XK_Multi_key: c_uint = <span class="number">0xFF20</span>;
+<span class="kw">pub const </span>XK_Kanji: c_uint = <span class="number">0xFF21</span>;
+<span class="kw">pub const </span>XK_Muhenkan: c_uint = <span class="number">0xFF22</span>;
+<span class="kw">pub const </span>XK_Henkan_Mode: c_uint = <span class="number">0xFF23</span>;
+<span class="kw">pub const </span>XK_Henkan: c_uint = <span class="number">0xFF23</span>;
+<span class="kw">pub const </span>XK_Romaji: c_uint = <span class="number">0xFF24</span>;
+<span class="kw">pub const </span>XK_Hiragana: c_uint = <span class="number">0xFF25</span>;
+<span class="kw">pub const </span>XK_Katakana: c_uint = <span class="number">0xFF26</span>;
+<span class="kw">pub const </span>XK_Hiragana_Katakana: c_uint = <span class="number">0xFF27</span>;
+<span class="kw">pub const </span>XK_Zenkaku: c_uint = <span class="number">0xFF28</span>;
+<span class="kw">pub const </span>XK_Hankaku: c_uint = <span class="number">0xFF29</span>;
+<span class="kw">pub const </span>XK_Zenkaku_Hankaku: c_uint = <span class="number">0xFF2A</span>;
+<span class="kw">pub const </span>XK_Touroku: c_uint = <span class="number">0xFF2B</span>;
+<span class="kw">pub const </span>XK_Massyo: c_uint = <span class="number">0xFF2C</span>;
+<span class="kw">pub const </span>XK_Kana_Lock: c_uint = <span class="number">0xFF2D</span>;
+<span class="kw">pub const </span>XK_Kana_Shift: c_uint = <span class="number">0xFF2E</span>;
+<span class="kw">pub const </span>XK_Eisu_Shift: c_uint = <span class="number">0xFF2F</span>;
+<span class="kw">pub const </span>XK_Eisu_toggle: c_uint = <span class="number">0xFF30</span>;
+<span class="kw">pub const </span>XK_Home: c_uint = <span class="number">0xFF50</span>;
+<span class="kw">pub const </span>XK_Left: c_uint = <span class="number">0xFF51</span>;
+<span class="kw">pub const </span>XK_Up: c_uint = <span class="number">0xFF52</span>;
+<span class="kw">pub const </span>XK_Right: c_uint = <span class="number">0xFF53</span>;
+<span class="kw">pub const </span>XK_Down: c_uint = <span class="number">0xFF54</span>;
+<span class="kw">pub const </span>XK_Prior: c_uint = <span class="number">0xFF55</span>;
+<span class="kw">pub const </span>XK_Page_Up: c_uint = <span class="number">0xFF55</span>;
+<span class="kw">pub const </span>XK_Next: c_uint = <span class="number">0xFF56</span>;
+<span class="kw">pub const </span>XK_Page_Down: c_uint = <span class="number">0xFF56</span>;
+<span class="kw">pub const </span>XK_End: c_uint = <span class="number">0xFF57</span>;
+<span class="kw">pub const </span>XK_Begin: c_uint = <span class="number">0xFF58</span>;
+<span class="kw">pub const </span>XK_Win_L: c_uint = <span class="number">0xFF5B</span>;
+<span class="kw">pub const </span>XK_Win_R: c_uint = <span class="number">0xFF5C</span>;
+<span class="kw">pub const </span>XK_App: c_uint = <span class="number">0xFF5D</span>;
+<span class="kw">pub const </span>XK_Select: c_uint = <span class="number">0xFF60</span>;
+<span class="kw">pub const </span>XK_Print: c_uint = <span class="number">0xFF61</span>;
+<span class="kw">pub const </span>XK_Execute: c_uint = <span class="number">0xFF62</span>;
+<span class="kw">pub const </span>XK_Insert: c_uint = <span class="number">0xFF63</span>;
+<span class="kw">pub const </span>XK_Undo: c_uint = <span class="number">0xFF65</span>;
+<span class="kw">pub const </span>XK_Redo: c_uint = <span class="number">0xFF66</span>;
+<span class="kw">pub const </span>XK_Menu: c_uint = <span class="number">0xFF67</span>;
+<span class="kw">pub const </span>XK_Find: c_uint = <span class="number">0xFF68</span>;
+<span class="kw">pub const </span>XK_Cancel: c_uint = <span class="number">0xFF69</span>;
+<span class="kw">pub const </span>XK_Help: c_uint = <span class="number">0xFF6A</span>;
+<span class="kw">pub const </span>XK_Break: c_uint = <span class="number">0xFF6B</span>;
+<span class="kw">pub const </span>XK_Mode_switch: c_uint = <span class="number">0xFF7E</span>;
+<span class="kw">pub const </span>XK_script_switch: c_uint = <span class="number">0xFF7E</span>;
+<span class="kw">pub const </span>XK_Num_Lock: c_uint = <span class="number">0xFF7F</span>;
+<span class="kw">pub const </span>XK_KP_Space: c_uint = <span class="number">0xFF80</span>;
+<span class="kw">pub const </span>XK_KP_Tab: c_uint = <span class="number">0xFF89</span>;
+<span class="kw">pub const </span>XK_KP_Enter: c_uint = <span class="number">0xFF8D</span>;
+<span class="kw">pub const </span>XK_KP_F1: c_uint = <span class="number">0xFF91</span>;
+<span class="kw">pub const </span>XK_KP_F2: c_uint = <span class="number">0xFF92</span>;
+<span class="kw">pub const </span>XK_KP_F3: c_uint = <span class="number">0xFF93</span>;
+<span class="kw">pub const </span>XK_KP_F4: c_uint = <span class="number">0xFF94</span>;
+<span class="kw">pub const </span>XK_KP_Home: c_uint = <span class="number">0xFF95</span>;
+<span class="kw">pub const </span>XK_KP_Left: c_uint = <span class="number">0xFF96</span>;
+<span class="kw">pub const </span>XK_KP_Up: c_uint = <span class="number">0xFF97</span>;
+<span class="kw">pub const </span>XK_KP_Right: c_uint = <span class="number">0xFF98</span>;
+<span class="kw">pub const </span>XK_KP_Down: c_uint = <span class="number">0xFF99</span>;
+<span class="kw">pub const </span>XK_KP_Prior: c_uint = <span class="number">0xFF9A</span>;
+<span class="kw">pub const </span>XK_KP_Page_Up: c_uint = <span class="number">0xFF9A</span>;
+<span class="kw">pub const </span>XK_KP_Next: c_uint = <span class="number">0xFF9B</span>;
+<span class="kw">pub const </span>XK_KP_Page_Down: c_uint = <span class="number">0xFF9B</span>;
+<span class="kw">pub const </span>XK_KP_End: c_uint = <span class="number">0xFF9C</span>;
+<span class="kw">pub const </span>XK_KP_Begin: c_uint = <span class="number">0xFF9D</span>;
+<span class="kw">pub const </span>XK_KP_Insert: c_uint = <span class="number">0xFF9E</span>;
+<span class="kw">pub const </span>XK_KP_Delete: c_uint = <span class="number">0xFF9F</span>;
+<span class="kw">pub const </span>XK_KP_Equal: c_uint = <span class="number">0xFFBD</span>;
+<span class="kw">pub const </span>XK_KP_Multiply: c_uint = <span class="number">0xFFAA</span>;
+<span class="kw">pub const </span>XK_KP_Add: c_uint = <span class="number">0xFFAB</span>;
+<span class="kw">pub const </span>XK_KP_Separator: c_uint = <span class="number">0xFFAC</span>;
+<span class="kw">pub const </span>XK_KP_Subtract: c_uint = <span class="number">0xFFAD</span>;
+<span class="kw">pub const </span>XK_KP_Decimal: c_uint = <span class="number">0xFFAE</span>;
+<span class="kw">pub const </span>XK_KP_Divide: c_uint = <span class="number">0xFFAF</span>;
+<span class="kw">pub const </span>XK_KP_0: c_uint = <span class="number">0xFFB0</span>;
+<span class="kw">pub const </span>XK_KP_1: c_uint = <span class="number">0xFFB1</span>;
+<span class="kw">pub const </span>XK_KP_2: c_uint = <span class="number">0xFFB2</span>;
+<span class="kw">pub const </span>XK_KP_3: c_uint = <span class="number">0xFFB3</span>;
+<span class="kw">pub const </span>XK_KP_4: c_uint = <span class="number">0xFFB4</span>;
+<span class="kw">pub const </span>XK_KP_5: c_uint = <span class="number">0xFFB5</span>;
+<span class="kw">pub const </span>XK_KP_6: c_uint = <span class="number">0xFFB6</span>;
+<span class="kw">pub const </span>XK_KP_7: c_uint = <span class="number">0xFFB7</span>;
+<span class="kw">pub const </span>XK_KP_8: c_uint = <span class="number">0xFFB8</span>;
+<span class="kw">pub const </span>XK_KP_9: c_uint = <span class="number">0xFFB9</span>;
+<span class="kw">pub const </span>XK_F1: c_uint = <span class="number">0xFFBE</span>;
+<span class="kw">pub const </span>XK_F2: c_uint = <span class="number">0xFFBF</span>;
+<span class="kw">pub const </span>XK_F3: c_uint = <span class="number">0xFFC0</span>;
+<span class="kw">pub const </span>XK_F4: c_uint = <span class="number">0xFFC1</span>;
+<span class="kw">pub const </span>XK_F5: c_uint = <span class="number">0xFFC2</span>;
+<span class="kw">pub const </span>XK_F6: c_uint = <span class="number">0xFFC3</span>;
+<span class="kw">pub const </span>XK_F7: c_uint = <span class="number">0xFFC4</span>;
+<span class="kw">pub const </span>XK_F8: c_uint = <span class="number">0xFFC5</span>;
+<span class="kw">pub const </span>XK_F9: c_uint = <span class="number">0xFFC6</span>;
+<span class="kw">pub const </span>XK_F10: c_uint = <span class="number">0xFFC7</span>;
+<span class="kw">pub const </span>XK_F11: c_uint = <span class="number">0xFFC8</span>;
+<span class="kw">pub const </span>XK_L1: c_uint = <span class="number">0xFFC8</span>;
+<span class="kw">pub const </span>XK_F12: c_uint = <span class="number">0xFFC9</span>;
+<span class="kw">pub const </span>XK_L2: c_uint = <span class="number">0xFFC9</span>;
+<span class="kw">pub const </span>XK_F13: c_uint = <span class="number">0xFFCA</span>;
+<span class="kw">pub const </span>XK_L3: c_uint = <span class="number">0xFFCA</span>;
+<span class="kw">pub const </span>XK_F14: c_uint = <span class="number">0xFFCB</span>;
+<span class="kw">pub const </span>XK_L4: c_uint = <span class="number">0xFFCB</span>;
+<span class="kw">pub const </span>XK_F15: c_uint = <span class="number">0xFFCC</span>;
+<span class="kw">pub const </span>XK_L5: c_uint = <span class="number">0xFFCC</span>;
+<span class="kw">pub const </span>XK_F16: c_uint = <span class="number">0xFFCD</span>;
+<span class="kw">pub const </span>XK_L6: c_uint = <span class="number">0xFFCD</span>;
+<span class="kw">pub const </span>XK_F17: c_uint = <span class="number">0xFFCE</span>;
+<span class="kw">pub const </span>XK_L7: c_uint = <span class="number">0xFFCE</span>;
+<span class="kw">pub const </span>XK_F18: c_uint = <span class="number">0xFFCF</span>;
+<span class="kw">pub const </span>XK_L8: c_uint = <span class="number">0xFFCF</span>;
+<span class="kw">pub const </span>XK_F19: c_uint = <span class="number">0xFFD0</span>;
+<span class="kw">pub const </span>XK_L9: c_uint = <span class="number">0xFFD0</span>;
+<span class="kw">pub const </span>XK_F20: c_uint = <span class="number">0xFFD1</span>;
+<span class="kw">pub const </span>XK_L10: c_uint = <span class="number">0xFFD1</span>;
+<span class="kw">pub const </span>XK_F21: c_uint = <span class="number">0xFFD2</span>;
+<span class="kw">pub const </span>XK_R1: c_uint = <span class="number">0xFFD2</span>;
+<span class="kw">pub const </span>XK_F22: c_uint = <span class="number">0xFFD3</span>;
+<span class="kw">pub const </span>XK_R2: c_uint = <span class="number">0xFFD3</span>;
+<span class="kw">pub const </span>XK_F23: c_uint = <span class="number">0xFFD4</span>;
+<span class="kw">pub const </span>XK_R3: c_uint = <span class="number">0xFFD4</span>;
+<span class="kw">pub const </span>XK_F24: c_uint = <span class="number">0xFFD5</span>;
+<span class="kw">pub const </span>XK_R4: c_uint = <span class="number">0xFFD5</span>;
+<span class="kw">pub const </span>XK_F25: c_uint = <span class="number">0xFFD6</span>;
+<span class="kw">pub const </span>XK_R5: c_uint = <span class="number">0xFFD6</span>;
+<span class="kw">pub const </span>XK_F26: c_uint = <span class="number">0xFFD7</span>;
+<span class="kw">pub const </span>XK_R6: c_uint = <span class="number">0xFFD7</span>;
+<span class="kw">pub const </span>XK_F27: c_uint = <span class="number">0xFFD8</span>;
+<span class="kw">pub const </span>XK_R7: c_uint = <span class="number">0xFFD8</span>;
+<span class="kw">pub const </span>XK_F28: c_uint = <span class="number">0xFFD9</span>;
+<span class="kw">pub const </span>XK_R8: c_uint = <span class="number">0xFFD9</span>;
+<span class="kw">pub const </span>XK_F29: c_uint = <span class="number">0xFFDA</span>;
+<span class="kw">pub const </span>XK_R9: c_uint = <span class="number">0xFFDA</span>;
+<span class="kw">pub const </span>XK_F30: c_uint = <span class="number">0xFFDB</span>;
+<span class="kw">pub const </span>XK_R10: c_uint = <span class="number">0xFFDB</span>;
+<span class="kw">pub const </span>XK_F31: c_uint = <span class="number">0xFFDC</span>;
+<span class="kw">pub const </span>XK_R11: c_uint = <span class="number">0xFFDC</span>;
+<span class="kw">pub const </span>XK_F32: c_uint = <span class="number">0xFFDD</span>;
+<span class="kw">pub const </span>XK_R12: c_uint = <span class="number">0xFFDD</span>;
+<span class="kw">pub const </span>XK_F33: c_uint = <span class="number">0xFFDE</span>;
+<span class="kw">pub const </span>XK_R13: c_uint = <span class="number">0xFFDE</span>;
+<span class="kw">pub const </span>XK_F34: c_uint = <span class="number">0xFFDF</span>;
+<span class="kw">pub const </span>XK_R14: c_uint = <span class="number">0xFFDF</span>;
+<span class="kw">pub const </span>XK_F35: c_uint = <span class="number">0xFFE0</span>;
+<span class="kw">pub const </span>XK_R15: c_uint = <span class="number">0xFFE0</span>;
+<span class="kw">pub const </span>XK_Shift_L: c_uint = <span class="number">0xFFE1</span>;
+<span class="kw">pub const </span>XK_Shift_R: c_uint = <span class="number">0xFFE2</span>;
+<span class="kw">pub const </span>XK_Control_L: c_uint = <span class="number">0xFFE3</span>;
+<span class="kw">pub const </span>XK_Control_R: c_uint = <span class="number">0xFFE4</span>;
+<span class="kw">pub const </span>XK_Caps_Lock: c_uint = <span class="number">0xFFE5</span>;
+<span class="kw">pub const </span>XK_Shift_Lock: c_uint = <span class="number">0xFFE6</span>;
+<span class="kw">pub const </span>XK_Meta_L: c_uint = <span class="number">0xFFE7</span>;
+<span class="kw">pub const </span>XK_Meta_R: c_uint = <span class="number">0xFFE8</span>;
+<span class="kw">pub const </span>XK_Alt_L: c_uint = <span class="number">0xFFE9</span>;
+<span class="kw">pub const </span>XK_Alt_R: c_uint = <span class="number">0xFFEA</span>;
+<span class="kw">pub const </span>XK_Super_L: c_uint = <span class="number">0xFFEB</span>;
+<span class="kw">pub const </span>XK_Super_R: c_uint = <span class="number">0xFFEC</span>;
+<span class="kw">pub const </span>XK_Hyper_L: c_uint = <span class="number">0xFFED</span>;
+<span class="kw">pub const </span>XK_Hyper_R: c_uint = <span class="number">0xFFEE</span>;
+<span class="kw">pub const </span>XK_space: c_uint = <span class="number">0x020</span>;
+<span class="kw">pub const </span>XK_exclam: c_uint = <span class="number">0x021</span>;
+<span class="kw">pub const </span>XK_quotedbl: c_uint = <span class="number">0x022</span>;
+<span class="kw">pub const </span>XK_numbersign: c_uint = <span class="number">0x023</span>;
+<span class="kw">pub const </span>XK_dollar: c_uint = <span class="number">0x024</span>;
+<span class="kw">pub const </span>XK_percent: c_uint = <span class="number">0x025</span>;
+<span class="kw">pub const </span>XK_ampersand: c_uint = <span class="number">0x026</span>;
+<span class="kw">pub const </span>XK_apostrophe: c_uint = <span class="number">0x027</span>;
+<span class="kw">pub const </span>XK_quoteright: c_uint = <span class="number">0x027</span>;
+<span class="kw">pub const </span>XK_parenleft: c_uint = <span class="number">0x028</span>;
+<span class="kw">pub const </span>XK_parenright: c_uint = <span class="number">0x029</span>;
+<span class="kw">pub const </span>XK_asterisk: c_uint = <span class="number">0x02a</span>;
+<span class="kw">pub const </span>XK_plus: c_uint = <span class="number">0x02b</span>;
+<span class="kw">pub const </span>XK_comma: c_uint = <span class="number">0x02c</span>;
+<span class="kw">pub const </span>XK_minus: c_uint = <span class="number">0x02d</span>;
+<span class="kw">pub const </span>XK_period: c_uint = <span class="number">0x02e</span>;
+<span class="kw">pub const </span>XK_slash: c_uint = <span class="number">0x02f</span>;
+<span class="kw">pub const </span>XK_0: c_uint = <span class="number">0x030</span>;
+<span class="kw">pub const </span>XK_1: c_uint = <span class="number">0x031</span>;
+<span class="kw">pub const </span>XK_2: c_uint = <span class="number">0x032</span>;
+<span class="kw">pub const </span>XK_3: c_uint = <span class="number">0x033</span>;
+<span class="kw">pub const </span>XK_4: c_uint = <span class="number">0x034</span>;
+<span class="kw">pub const </span>XK_5: c_uint = <span class="number">0x035</span>;
+<span class="kw">pub const </span>XK_6: c_uint = <span class="number">0x036</span>;
+<span class="kw">pub const </span>XK_7: c_uint = <span class="number">0x037</span>;
+<span class="kw">pub const </span>XK_8: c_uint = <span class="number">0x038</span>;
+<span class="kw">pub const </span>XK_9: c_uint = <span class="number">0x039</span>;
+<span class="kw">pub const </span>XK_colon: c_uint = <span class="number">0x03a</span>;
+<span class="kw">pub const </span>XK_semicolon: c_uint = <span class="number">0x03b</span>;
+<span class="kw">pub const </span>XK_less: c_uint = <span class="number">0x03c</span>;
+<span class="kw">pub const </span>XK_equal: c_uint = <span class="number">0x03d</span>;
+<span class="kw">pub const </span>XK_greater: c_uint = <span class="number">0x03e</span>;
+<span class="kw">pub const </span>XK_question: c_uint = <span class="number">0x03f</span>;
+<span class="kw">pub const </span>XK_at: c_uint = <span class="number">0x040</span>;
+<span class="kw">pub const </span>XK_A: c_uint = <span class="number">0x041</span>;
+<span class="kw">pub const </span>XK_B: c_uint = <span class="number">0x042</span>;
+<span class="kw">pub const </span>XK_C: c_uint = <span class="number">0x043</span>;
+<span class="kw">pub const </span>XK_D: c_uint = <span class="number">0x044</span>;
+<span class="kw">pub const </span>XK_E: c_uint = <span class="number">0x045</span>;
+<span class="kw">pub const </span>XK_F: c_uint = <span class="number">0x046</span>;
+<span class="kw">pub const </span>XK_G: c_uint = <span class="number">0x047</span>;
+<span class="kw">pub const </span>XK_H: c_uint = <span class="number">0x048</span>;
+<span class="kw">pub const </span>XK_I: c_uint = <span class="number">0x049</span>;
+<span class="kw">pub const </span>XK_J: c_uint = <span class="number">0x04a</span>;
+<span class="kw">pub const </span>XK_K: c_uint = <span class="number">0x04b</span>;
+<span class="kw">pub const </span>XK_L: c_uint = <span class="number">0x04c</span>;
+<span class="kw">pub const </span>XK_M: c_uint = <span class="number">0x04d</span>;
+<span class="kw">pub const </span>XK_N: c_uint = <span class="number">0x04e</span>;
+<span class="kw">pub const </span>XK_O: c_uint = <span class="number">0x04f</span>;
+<span class="kw">pub const </span>XK_P: c_uint = <span class="number">0x050</span>;
+<span class="kw">pub const </span>XK_Q: c_uint = <span class="number">0x051</span>;
+<span class="kw">pub const </span>XK_R: c_uint = <span class="number">0x052</span>;
+<span class="kw">pub const </span>XK_S: c_uint = <span class="number">0x053</span>;
+<span class="kw">pub const </span>XK_T: c_uint = <span class="number">0x054</span>;
+<span class="kw">pub const </span>XK_U: c_uint = <span class="number">0x055</span>;
+<span class="kw">pub const </span>XK_V: c_uint = <span class="number">0x056</span>;
+<span class="kw">pub const </span>XK_W: c_uint = <span class="number">0x057</span>;
+<span class="kw">pub const </span>XK_X: c_uint = <span class="number">0x058</span>;
+<span class="kw">pub const </span>XK_Y: c_uint = <span class="number">0x059</span>;
+<span class="kw">pub const </span>XK_Z: c_uint = <span class="number">0x05a</span>;
+<span class="kw">pub const </span>XK_bracketleft: c_uint = <span class="number">0x05b</span>;
+<span class="kw">pub const </span>XK_backslash: c_uint = <span class="number">0x05c</span>;
+<span class="kw">pub const </span>XK_bracketright: c_uint = <span class="number">0x05d</span>;
+<span class="kw">pub const </span>XK_asciicircum: c_uint = <span class="number">0x05e</span>;
+<span class="kw">pub const </span>XK_underscore: c_uint = <span class="number">0x05f</span>;
+<span class="kw">pub const </span>XK_grave: c_uint = <span class="number">0x060</span>;
+<span class="kw">pub const </span>XK_quoteleft: c_uint = <span class="number">0x060</span>;
+<span class="kw">pub const </span>XK_a: c_uint = <span class="number">0x061</span>;
+<span class="kw">pub const </span>XK_b: c_uint = <span class="number">0x062</span>;
+<span class="kw">pub const </span>XK_c: c_uint = <span class="number">0x063</span>;
+<span class="kw">pub const </span>XK_d: c_uint = <span class="number">0x064</span>;
+<span class="kw">pub const </span>XK_e: c_uint = <span class="number">0x065</span>;
+<span class="kw">pub const </span>XK_f: c_uint = <span class="number">0x066</span>;
+<span class="kw">pub const </span>XK_g: c_uint = <span class="number">0x067</span>;
+<span class="kw">pub const </span>XK_h: c_uint = <span class="number">0x068</span>;
+<span class="kw">pub const </span>XK_i: c_uint = <span class="number">0x069</span>;
+<span class="kw">pub const </span>XK_j: c_uint = <span class="number">0x06a</span>;
+<span class="kw">pub const </span>XK_k: c_uint = <span class="number">0x06b</span>;
+<span class="kw">pub const </span>XK_l: c_uint = <span class="number">0x06c</span>;
+<span class="kw">pub const </span>XK_m: c_uint = <span class="number">0x06d</span>;
+<span class="kw">pub const </span>XK_n: c_uint = <span class="number">0x06e</span>;
+<span class="kw">pub const </span>XK_o: c_uint = <span class="number">0x06f</span>;
+<span class="kw">pub const </span>XK_p: c_uint = <span class="number">0x070</span>;
+<span class="kw">pub const </span>XK_q: c_uint = <span class="number">0x071</span>;
+<span class="kw">pub const </span>XK_r: c_uint = <span class="number">0x072</span>;
+<span class="kw">pub const </span>XK_s: c_uint = <span class="number">0x073</span>;
+<span class="kw">pub const </span>XK_t: c_uint = <span class="number">0x074</span>;
+<span class="kw">pub const </span>XK_u: c_uint = <span class="number">0x075</span>;
+<span class="kw">pub const </span>XK_v: c_uint = <span class="number">0x076</span>;
+<span class="kw">pub const </span>XK_w: c_uint = <span class="number">0x077</span>;
+<span class="kw">pub const </span>XK_x: c_uint = <span class="number">0x078</span>;
+<span class="kw">pub const </span>XK_y: c_uint = <span class="number">0x079</span>;
+<span class="kw">pub const </span>XK_z: c_uint = <span class="number">0x07a</span>;
+<span class="kw">pub const </span>XK_braceleft: c_uint = <span class="number">0x07b</span>;
+<span class="kw">pub const </span>XK_bar: c_uint = <span class="number">0x07c</span>;
+<span class="kw">pub const </span>XK_braceright: c_uint = <span class="number">0x07d</span>;
+<span class="kw">pub const </span>XK_asciitilde: c_uint = <span class="number">0x07e</span>;
+<span class="kw">pub const </span>XK_nobreakspace: c_uint = <span class="number">0x0a0</span>;
+<span class="kw">pub const </span>XK_exclamdown: c_uint = <span class="number">0x0a1</span>;
+<span class="kw">pub const </span>XK_cent: c_uint = <span class="number">0x0a2</span>;
+<span class="kw">pub const </span>XK_sterling: c_uint = <span class="number">0x0a3</span>;
+<span class="kw">pub const </span>XK_currency: c_uint = <span class="number">0x0a4</span>;
+<span class="kw">pub const </span>XK_yen: c_uint = <span class="number">0x0a5</span>;
+<span class="kw">pub const </span>XK_brokenbar: c_uint = <span class="number">0x0a6</span>;
+<span class="kw">pub const </span>XK_section: c_uint = <span class="number">0x0a7</span>;
+<span class="kw">pub const </span>XK_diaeresis: c_uint = <span class="number">0x0a8</span>;
+<span class="kw">pub const </span>XK_copyright: c_uint = <span class="number">0x0a9</span>;
+<span class="kw">pub const </span>XK_ordfeminine: c_uint = <span class="number">0x0aa</span>;
+<span class="kw">pub const </span>XK_guillemotleft: c_uint = <span class="number">0x0ab</span>;
+<span class="kw">pub const </span>XK_notsign: c_uint = <span class="number">0x0ac</span>;
+<span class="kw">pub const </span>XK_hyphen: c_uint = <span class="number">0x0ad</span>;
+<span class="kw">pub const </span>XK_registered: c_uint = <span class="number">0x0ae</span>;
+<span class="kw">pub const </span>XK_macron: c_uint = <span class="number">0x0af</span>;
+<span class="kw">pub const </span>XK_degree: c_uint = <span class="number">0x0b0</span>;
+<span class="kw">pub const </span>XK_plusminus: c_uint = <span class="number">0x0b1</span>;
+<span class="kw">pub const </span>XK_twosuperior: c_uint = <span class="number">0x0b2</span>;
+<span class="kw">pub const </span>XK_threesuperior: c_uint = <span class="number">0x0b3</span>;
+<span class="kw">pub const </span>XK_acute: c_uint = <span class="number">0x0b4</span>;
+<span class="kw">pub const </span>XK_mu: c_uint = <span class="number">0x0b5</span>;
+<span class="kw">pub const </span>XK_paragraph: c_uint = <span class="number">0x0b6</span>;
+<span class="kw">pub const </span>XK_periodcentered: c_uint = <span class="number">0x0b7</span>;
+<span class="kw">pub const </span>XK_cedilla: c_uint = <span class="number">0x0b8</span>;
+<span class="kw">pub const </span>XK_onesuperior: c_uint = <span class="number">0x0b9</span>;
+<span class="kw">pub const </span>XK_masculine: c_uint = <span class="number">0x0ba</span>;
+<span class="kw">pub const </span>XK_guillemotright: c_uint = <span class="number">0x0bb</span>;
+<span class="kw">pub const </span>XK_onequarter: c_uint = <span class="number">0x0bc</span>;
+<span class="kw">pub const </span>XK_onehalf: c_uint = <span class="number">0x0bd</span>;
+<span class="kw">pub const </span>XK_threequarters: c_uint = <span class="number">0x0be</span>;
+<span class="kw">pub const </span>XK_questiondown: c_uint = <span class="number">0x0bf</span>;
+<span class="kw">pub const </span>XK_Agrave: c_uint = <span class="number">0x0c0</span>;
+<span class="kw">pub const </span>XK_Aacute: c_uint = <span class="number">0x0c1</span>;
+<span class="kw">pub const </span>XK_Acircumflex: c_uint = <span class="number">0x0c2</span>;
+<span class="kw">pub const </span>XK_Atilde: c_uint = <span class="number">0x0c3</span>;
+<span class="kw">pub const </span>XK_Adiaeresis: c_uint = <span class="number">0x0c4</span>;
+<span class="kw">pub const </span>XK_Aring: c_uint = <span class="number">0x0c5</span>;
+<span class="kw">pub const </span>XK_AE: c_uint = <span class="number">0x0c6</span>;
+<span class="kw">pub const </span>XK_Ccedilla: c_uint = <span class="number">0x0c7</span>;
+<span class="kw">pub const </span>XK_Egrave: c_uint = <span class="number">0x0c8</span>;
+<span class="kw">pub const </span>XK_Eacute: c_uint = <span class="number">0x0c9</span>;
+<span class="kw">pub const </span>XK_Ecircumflex: c_uint = <span class="number">0x0ca</span>;
+<span class="kw">pub const </span>XK_Ediaeresis: c_uint = <span class="number">0x0cb</span>;
+<span class="kw">pub const </span>XK_Igrave: c_uint = <span class="number">0x0cc</span>;
+<span class="kw">pub const </span>XK_Iacute: c_uint = <span class="number">0x0cd</span>;
+<span class="kw">pub const </span>XK_Icircumflex: c_uint = <span class="number">0x0ce</span>;
+<span class="kw">pub const </span>XK_Idiaeresis: c_uint = <span class="number">0x0cf</span>;
+<span class="kw">pub const </span>XK_ETH: c_uint = <span class="number">0x0d0</span>;
+<span class="kw">pub const </span>XK_Eth: c_uint = <span class="number">0x0d0</span>;
+<span class="kw">pub const </span>XK_Ntilde: c_uint = <span class="number">0x0d1</span>;
+<span class="kw">pub const </span>XK_Ograve: c_uint = <span class="number">0x0d2</span>;
+<span class="kw">pub const </span>XK_Oacute: c_uint = <span class="number">0x0d3</span>;
+<span class="kw">pub const </span>XK_Ocircumflex: c_uint = <span class="number">0x0d4</span>;
+<span class="kw">pub const </span>XK_Otilde: c_uint = <span class="number">0x0d5</span>;
+<span class="kw">pub const </span>XK_Odiaeresis: c_uint = <span class="number">0x0d6</span>;
+<span class="kw">pub const </span>XK_multiply: c_uint = <span class="number">0x0d7</span>;
+<span class="kw">pub const </span>XK_Ooblique: c_uint = <span class="number">0x0d8</span>;
+<span class="kw">pub const </span>XK_Ugrave: c_uint = <span class="number">0x0d9</span>;
+<span class="kw">pub const </span>XK_Uacute: c_uint = <span class="number">0x0da</span>;
+<span class="kw">pub const </span>XK_Ucircumflex: c_uint = <span class="number">0x0db</span>;
+<span class="kw">pub const </span>XK_Udiaeresis: c_uint = <span class="number">0x0dc</span>;
+<span class="kw">pub const </span>XK_Yacute: c_uint = <span class="number">0x0dd</span>;
+<span class="kw">pub const </span>XK_THORN: c_uint = <span class="number">0x0de</span>;
+<span class="kw">pub const </span>XK_Thorn: c_uint = <span class="number">0x0de</span>;
+<span class="kw">pub const </span>XK_ssharp: c_uint = <span class="number">0x0df</span>;
+<span class="kw">pub const </span>XK_agrave: c_uint = <span class="number">0x0e0</span>;
+<span class="kw">pub const </span>XK_aacute: c_uint = <span class="number">0x0e1</span>;
+<span class="kw">pub const </span>XK_acircumflex: c_uint = <span class="number">0x0e2</span>;
+<span class="kw">pub const </span>XK_atilde: c_uint = <span class="number">0x0e3</span>;
+<span class="kw">pub const </span>XK_adiaeresis: c_uint = <span class="number">0x0e4</span>;
+<span class="kw">pub const </span>XK_aring: c_uint = <span class="number">0x0e5</span>;
+<span class="kw">pub const </span>XK_ae: c_uint = <span class="number">0x0e6</span>;
+<span class="kw">pub const </span>XK_ccedilla: c_uint = <span class="number">0x0e7</span>;
+<span class="kw">pub const </span>XK_egrave: c_uint = <span class="number">0x0e8</span>;
+<span class="kw">pub const </span>XK_eacute: c_uint = <span class="number">0x0e9</span>;
+<span class="kw">pub const </span>XK_ecircumflex: c_uint = <span class="number">0x0ea</span>;
+<span class="kw">pub const </span>XK_ediaeresis: c_uint = <span class="number">0x0eb</span>;
+<span class="kw">pub const </span>XK_igrave: c_uint = <span class="number">0x0ec</span>;
+<span class="kw">pub const </span>XK_iacute: c_uint = <span class="number">0x0ed</span>;
+<span class="kw">pub const </span>XK_icircumflex: c_uint = <span class="number">0x0ee</span>;
+<span class="kw">pub const </span>XK_idiaeresis: c_uint = <span class="number">0x0ef</span>;
+<span class="kw">pub const </span>XK_eth: c_uint = <span class="number">0x0f0</span>;
+<span class="kw">pub const </span>XK_ntilde: c_uint = <span class="number">0x0f1</span>;
+<span class="kw">pub const </span>XK_ograve: c_uint = <span class="number">0x0f2</span>;
+<span class="kw">pub const </span>XK_oacute: c_uint = <span class="number">0x0f3</span>;
+<span class="kw">pub const </span>XK_ocircumflex: c_uint = <span class="number">0x0f4</span>;
+<span class="kw">pub const </span>XK_otilde: c_uint = <span class="number">0x0f5</span>;
+<span class="kw">pub const </span>XK_odiaeresis: c_uint = <span class="number">0x0f6</span>;
+<span class="kw">pub const </span>XK_division: c_uint = <span class="number">0x0f7</span>;
+<span class="kw">pub const </span>XK_oslash: c_uint = <span class="number">0x0f8</span>;
+<span class="kw">pub const </span>XK_ugrave: c_uint = <span class="number">0x0f9</span>;
+<span class="kw">pub const </span>XK_uacute: c_uint = <span class="number">0x0fa</span>;
+<span class="kw">pub const </span>XK_ucircumflex: c_uint = <span class="number">0x0fb</span>;
+<span class="kw">pub const </span>XK_udiaeresis: c_uint = <span class="number">0x0fc</span>;
+<span class="kw">pub const </span>XK_yacute: c_uint = <span class="number">0x0fd</span>;
+<span class="kw">pub const </span>XK_thorn: c_uint = <span class="number">0x0fe</span>;
+<span class="kw">pub const </span>XK_ydiaeresis: c_uint = <span class="number">0x0ff</span>;
+<span class="kw">pub const </span>XK_Aogonek: c_uint = <span class="number">0x1a1</span>;
+<span class="kw">pub const </span>XK_breve: c_uint = <span class="number">0x1a2</span>;
+<span class="kw">pub const </span>XK_Lstroke: c_uint = <span class="number">0x1a3</span>;
+<span class="kw">pub const </span>XK_Lcaron: c_uint = <span class="number">0x1a5</span>;
+<span class="kw">pub const </span>XK_Sacute: c_uint = <span class="number">0x1a6</span>;
+<span class="kw">pub const </span>XK_Scaron: c_uint = <span class="number">0x1a9</span>;
+<span class="kw">pub const </span>XK_Scedilla: c_uint = <span class="number">0x1aa</span>;
+<span class="kw">pub const </span>XK_Tcaron: c_uint = <span class="number">0x1ab</span>;
+<span class="kw">pub const </span>XK_Zacute: c_uint = <span class="number">0x1ac</span>;
+<span class="kw">pub const </span>XK_Zcaron: c_uint = <span class="number">0x1ae</span>;
+<span class="kw">pub const </span>XK_Zabovedot: c_uint = <span class="number">0x1af</span>;
+<span class="kw">pub const </span>XK_aogonek: c_uint = <span class="number">0x1b1</span>;
+<span class="kw">pub const </span>XK_ogonek: c_uint = <span class="number">0x1b2</span>;
+<span class="kw">pub const </span>XK_lstroke: c_uint = <span class="number">0x1b3</span>;
+<span class="kw">pub const </span>XK_lcaron: c_uint = <span class="number">0x1b5</span>;
+<span class="kw">pub const </span>XK_sacute: c_uint = <span class="number">0x1b6</span>;
+<span class="kw">pub const </span>XK_caron: c_uint = <span class="number">0x1b7</span>;
+<span class="kw">pub const </span>XK_scaron: c_uint = <span class="number">0x1b9</span>;
+<span class="kw">pub const </span>XK_scedilla: c_uint = <span class="number">0x1ba</span>;
+<span class="kw">pub const </span>XK_tcaron: c_uint = <span class="number">0x1bb</span>;
+<span class="kw">pub const </span>XK_zacute: c_uint = <span class="number">0x1bc</span>;
+<span class="kw">pub const </span>XK_doubleacute: c_uint = <span class="number">0x1bd</span>;
+<span class="kw">pub const </span>XK_zcaron: c_uint = <span class="number">0x1be</span>;
+<span class="kw">pub const </span>XK_zabovedot: c_uint = <span class="number">0x1bf</span>;
+<span class="kw">pub const </span>XK_Racute: c_uint = <span class="number">0x1c0</span>;
+<span class="kw">pub const </span>XK_Abreve: c_uint = <span class="number">0x1c3</span>;
+<span class="kw">pub const </span>XK_Lacute: c_uint = <span class="number">0x1c5</span>;
+<span class="kw">pub const </span>XK_Cacute: c_uint = <span class="number">0x1c6</span>;
+<span class="kw">pub const </span>XK_Ccaron: c_uint = <span class="number">0x1c8</span>;
+<span class="kw">pub const </span>XK_Eogonek: c_uint = <span class="number">0x1ca</span>;
+<span class="kw">pub const </span>XK_Ecaron: c_uint = <span class="number">0x1cc</span>;
+<span class="kw">pub const </span>XK_Dcaron: c_uint = <span class="number">0x1cf</span>;
+<span class="kw">pub const </span>XK_Dstroke: c_uint = <span class="number">0x1d0</span>;
+<span class="kw">pub const </span>XK_Nacute: c_uint = <span class="number">0x1d1</span>;
+<span class="kw">pub const </span>XK_Ncaron: c_uint = <span class="number">0x1d2</span>;
+<span class="kw">pub const </span>XK_Odoubleacute: c_uint = <span class="number">0x1d5</span>;
+<span class="kw">pub const </span>XK_Rcaron: c_uint = <span class="number">0x1d8</span>;
+<span class="kw">pub const </span>XK_Uring: c_uint = <span class="number">0x1d9</span>;
+<span class="kw">pub const </span>XK_Udoubleacute: c_uint = <span class="number">0x1db</span>;
+<span class="kw">pub const </span>XK_Tcedilla: c_uint = <span class="number">0x1de</span>;
+<span class="kw">pub const </span>XK_racute: c_uint = <span class="number">0x1e0</span>;
+<span class="kw">pub const </span>XK_abreve: c_uint = <span class="number">0x1e3</span>;
+<span class="kw">pub const </span>XK_lacute: c_uint = <span class="number">0x1e5</span>;
+<span class="kw">pub const </span>XK_cacute: c_uint = <span class="number">0x1e6</span>;
+<span class="kw">pub const </span>XK_ccaron: c_uint = <span class="number">0x1e8</span>;
+<span class="kw">pub const </span>XK_eogonek: c_uint = <span class="number">0x1ea</span>;
+<span class="kw">pub const </span>XK_ecaron: c_uint = <span class="number">0x1ec</span>;
+<span class="kw">pub const </span>XK_dcaron: c_uint = <span class="number">0x1ef</span>;
+<span class="kw">pub const </span>XK_dstroke: c_uint = <span class="number">0x1f0</span>;
+<span class="kw">pub const </span>XK_nacute: c_uint = <span class="number">0x1f1</span>;
+<span class="kw">pub const </span>XK_ncaron: c_uint = <span class="number">0x1f2</span>;
+<span class="kw">pub const </span>XK_odoubleacute: c_uint = <span class="number">0x1f5</span>;
+<span class="kw">pub const </span>XK_udoubleacute: c_uint = <span class="number">0x1fb</span>;
+<span class="kw">pub const </span>XK_rcaron: c_uint = <span class="number">0x1f8</span>;
+<span class="kw">pub const </span>XK_uring: c_uint = <span class="number">0x1f9</span>;
+<span class="kw">pub const </span>XK_tcedilla: c_uint = <span class="number">0x1fe</span>;
+<span class="kw">pub const </span>XK_abovedot: c_uint = <span class="number">0x1ff</span>;
+<span class="kw">pub const </span>XK_Hstroke: c_uint = <span class="number">0x2a1</span>;
+<span class="kw">pub const </span>XK_Hcircumflex: c_uint = <span class="number">0x2a6</span>;
+<span class="kw">pub const </span>XK_Iabovedot: c_uint = <span class="number">0x2a9</span>;
+<span class="kw">pub const </span>XK_Gbreve: c_uint = <span class="number">0x2ab</span>;
+<span class="kw">pub const </span>XK_Jcircumflex: c_uint = <span class="number">0x2ac</span>;
+<span class="kw">pub const </span>XK_hstroke: c_uint = <span class="number">0x2b1</span>;
+<span class="kw">pub const </span>XK_hcircumflex: c_uint = <span class="number">0x2b6</span>;
+<span class="kw">pub const </span>XK_idotless: c_uint = <span class="number">0x2b9</span>;
+<span class="kw">pub const </span>XK_gbreve: c_uint = <span class="number">0x2bb</span>;
+<span class="kw">pub const </span>XK_jcircumflex: c_uint = <span class="number">0x2bc</span>;
+<span class="kw">pub const </span>XK_Cabovedot: c_uint = <span class="number">0x2c5</span>;
+<span class="kw">pub const </span>XK_Ccircumflex: c_uint = <span class="number">0x2c6</span>;
+<span class="kw">pub const </span>XK_Gabovedot: c_uint = <span class="number">0x2d5</span>;
+<span class="kw">pub const </span>XK_Gcircumflex: c_uint = <span class="number">0x2d8</span>;
+<span class="kw">pub const </span>XK_Ubreve: c_uint = <span class="number">0x2dd</span>;
+<span class="kw">pub const </span>XK_Scircumflex: c_uint = <span class="number">0x2de</span>;
+<span class="kw">pub const </span>XK_cabovedot: c_uint = <span class="number">0x2e5</span>;
+<span class="kw">pub const </span>XK_ccircumflex: c_uint = <span class="number">0x2e6</span>;
+<span class="kw">pub const </span>XK_gabovedot: c_uint = <span class="number">0x2f5</span>;
+<span class="kw">pub const </span>XK_gcircumflex: c_uint = <span class="number">0x2f8</span>;
+<span class="kw">pub const </span>XK_ubreve: c_uint = <span class="number">0x2fd</span>;
+<span class="kw">pub const </span>XK_scircumflex: c_uint = <span class="number">0x2fe</span>;
+<span class="kw">pub const </span>XK_kra: c_uint = <span class="number">0x3a2</span>;
+<span class="kw">pub const </span>XK_kappa: c_uint = <span class="number">0x3a2</span>;
+<span class="kw">pub const </span>XK_Rcedilla: c_uint = <span class="number">0x3a3</span>;
+<span class="kw">pub const </span>XK_Itilde: c_uint = <span class="number">0x3a5</span>;
+<span class="kw">pub const </span>XK_Lcedilla: c_uint = <span class="number">0x3a6</span>;
+<span class="kw">pub const </span>XK_Emacron: c_uint = <span class="number">0x3aa</span>;
+<span class="kw">pub const </span>XK_Gcedilla: c_uint = <span class="number">0x3ab</span>;
+<span class="kw">pub const </span>XK_Tslash: c_uint = <span class="number">0x3ac</span>;
+<span class="kw">pub const </span>XK_rcedilla: c_uint = <span class="number">0x3b3</span>;
+<span class="kw">pub const </span>XK_itilde: c_uint = <span class="number">0x3b5</span>;
+<span class="kw">pub const </span>XK_lcedilla: c_uint = <span class="number">0x3b6</span>;
+<span class="kw">pub const </span>XK_emacron: c_uint = <span class="number">0x3ba</span>;
+<span class="kw">pub const </span>XK_gcedilla: c_uint = <span class="number">0x3bb</span>;
+<span class="kw">pub const </span>XK_tslash: c_uint = <span class="number">0x3bc</span>;
+<span class="kw">pub const </span>XK_ENG: c_uint = <span class="number">0x3bd</span>;
+<span class="kw">pub const </span>XK_eng: c_uint = <span class="number">0x3bf</span>;
+<span class="kw">pub const </span>XK_Amacron: c_uint = <span class="number">0x3c0</span>;
+<span class="kw">pub const </span>XK_Iogonek: c_uint = <span class="number">0x3c7</span>;
+<span class="kw">pub const </span>XK_Eabovedot: c_uint = <span class="number">0x3cc</span>;
+<span class="kw">pub const </span>XK_Imacron: c_uint = <span class="number">0x3cf</span>;
+<span class="kw">pub const </span>XK_Ncedilla: c_uint = <span class="number">0x3d1</span>;
+<span class="kw">pub const </span>XK_Omacron: c_uint = <span class="number">0x3d2</span>;
+<span class="kw">pub const </span>XK_Kcedilla: c_uint = <span class="number">0x3d3</span>;
+<span class="kw">pub const </span>XK_Uogonek: c_uint = <span class="number">0x3d9</span>;
+<span class="kw">pub const </span>XK_Utilde: c_uint = <span class="number">0x3dd</span>;
+<span class="kw">pub const </span>XK_Umacron: c_uint = <span class="number">0x3de</span>;
+<span class="kw">pub const </span>XK_amacron: c_uint = <span class="number">0x3e0</span>;
+<span class="kw">pub const </span>XK_iogonek: c_uint = <span class="number">0x3e7</span>;
+<span class="kw">pub const </span>XK_eabovedot: c_uint = <span class="number">0x3ec</span>;
+<span class="kw">pub const </span>XK_imacron: c_uint = <span class="number">0x3ef</span>;
+<span class="kw">pub const </span>XK_ncedilla: c_uint = <span class="number">0x3f1</span>;
+<span class="kw">pub const </span>XK_omacron: c_uint = <span class="number">0x3f2</span>;
+<span class="kw">pub const </span>XK_kcedilla: c_uint = <span class="number">0x3f3</span>;
+<span class="kw">pub const </span>XK_uogonek: c_uint = <span class="number">0x3f9</span>;
+<span class="kw">pub const </span>XK_utilde: c_uint = <span class="number">0x3fd</span>;
+<span class="kw">pub const </span>XK_umacron: c_uint = <span class="number">0x3fe</span>;
+<span class="kw">pub const </span>XK_overline: c_uint = <span class="number">0x47e</span>;
+<span class="kw">pub const </span>XK_kana_fullstop: c_uint = <span class="number">0x4a1</span>;
+<span class="kw">pub const </span>XK_kana_openingbracket: c_uint = <span class="number">0x4a2</span>;
+<span class="kw">pub const </span>XK_kana_closingbracket: c_uint = <span class="number">0x4a3</span>;
+<span class="kw">pub const </span>XK_kana_comma: c_uint = <span class="number">0x4a4</span>;
+<span class="kw">pub const </span>XK_kana_conjunctive: c_uint = <span class="number">0x4a5</span>;
+<span class="kw">pub const </span>XK_kana_middledot: c_uint = <span class="number">0x4a5</span>;
+<span class="kw">pub const </span>XK_kana_WO: c_uint = <span class="number">0x4a6</span>;
+<span class="kw">pub const </span>XK_kana_a: c_uint = <span class="number">0x4a7</span>;
+<span class="kw">pub const </span>XK_kana_i: c_uint = <span class="number">0x4a8</span>;
+<span class="kw">pub const </span>XK_kana_u: c_uint = <span class="number">0x4a9</span>;
+<span class="kw">pub const </span>XK_kana_e: c_uint = <span class="number">0x4aa</span>;
+<span class="kw">pub const </span>XK_kana_o: c_uint = <span class="number">0x4ab</span>;
+<span class="kw">pub const </span>XK_kana_ya: c_uint = <span class="number">0x4ac</span>;
+<span class="kw">pub const </span>XK_kana_yu: c_uint = <span class="number">0x4ad</span>;
+<span class="kw">pub const </span>XK_kana_yo: c_uint = <span class="number">0x4ae</span>;
+<span class="kw">pub const </span>XK_kana_tsu: c_uint = <span class="number">0x4af</span>;
+<span class="kw">pub const </span>XK_kana_tu: c_uint = <span class="number">0x4af</span>;
+<span class="kw">pub const </span>XK_prolongedsound: c_uint = <span class="number">0x4b0</span>;
+<span class="kw">pub const </span>XK_kana_A: c_uint = <span class="number">0x4b1</span>;
+<span class="kw">pub const </span>XK_kana_I: c_uint = <span class="number">0x4b2</span>;
+<span class="kw">pub const </span>XK_kana_U: c_uint = <span class="number">0x4b3</span>;
+<span class="kw">pub const </span>XK_kana_E: c_uint = <span class="number">0x4b4</span>;
+<span class="kw">pub const </span>XK_kana_O: c_uint = <span class="number">0x4b5</span>;
+<span class="kw">pub const </span>XK_kana_KA: c_uint = <span class="number">0x4b6</span>;
+<span class="kw">pub const </span>XK_kana_KI: c_uint = <span class="number">0x4b7</span>;
+<span class="kw">pub const </span>XK_kana_KU: c_uint = <span class="number">0x4b8</span>;
+<span class="kw">pub const </span>XK_kana_KE: c_uint = <span class="number">0x4b9</span>;
+<span class="kw">pub const </span>XK_kana_KO: c_uint = <span class="number">0x4ba</span>;
+<span class="kw">pub const </span>XK_kana_SA: c_uint = <span class="number">0x4bb</span>;
+<span class="kw">pub const </span>XK_kana_SHI: c_uint = <span class="number">0x4bc</span>;
+<span class="kw">pub const </span>XK_kana_SU: c_uint = <span class="number">0x4bd</span>;
+<span class="kw">pub const </span>XK_kana_SE: c_uint = <span class="number">0x4be</span>;
+<span class="kw">pub const </span>XK_kana_SO: c_uint = <span class="number">0x4bf</span>;
+<span class="kw">pub const </span>XK_kana_TA: c_uint = <span class="number">0x4c0</span>;
+<span class="kw">pub const </span>XK_kana_CHI: c_uint = <span class="number">0x4c1</span>;
+<span class="kw">pub const </span>XK_kana_TI: c_uint = <span class="number">0x4c1</span>;
+<span class="kw">pub const </span>XK_kana_TSU: c_uint = <span class="number">0x4c2</span>;
+<span class="kw">pub const </span>XK_kana_TU: c_uint = <span class="number">0x4c2</span>;
+<span class="kw">pub const </span>XK_kana_TE: c_uint = <span class="number">0x4c3</span>;
+<span class="kw">pub const </span>XK_kana_TO: c_uint = <span class="number">0x4c4</span>;
+<span class="kw">pub const </span>XK_kana_NA: c_uint = <span class="number">0x4c5</span>;
+<span class="kw">pub const </span>XK_kana_NI: c_uint = <span class="number">0x4c6</span>;
+<span class="kw">pub const </span>XK_kana_NU: c_uint = <span class="number">0x4c7</span>;
+<span class="kw">pub const </span>XK_kana_NE: c_uint = <span class="number">0x4c8</span>;
+<span class="kw">pub const </span>XK_kana_NO: c_uint = <span class="number">0x4c9</span>;
+<span class="kw">pub const </span>XK_kana_HA: c_uint = <span class="number">0x4ca</span>;
+<span class="kw">pub const </span>XK_kana_HI: c_uint = <span class="number">0x4cb</span>;
+<span class="kw">pub const </span>XK_kana_FU: c_uint = <span class="number">0x4cc</span>;
+<span class="kw">pub const </span>XK_kana_HU: c_uint = <span class="number">0x4cc</span>;
+<span class="kw">pub const </span>XK_kana_HE: c_uint = <span class="number">0x4cd</span>;
+<span class="kw">pub const </span>XK_kana_HO: c_uint = <span class="number">0x4ce</span>;
+<span class="kw">pub const </span>XK_kana_MA: c_uint = <span class="number">0x4cf</span>;
+<span class="kw">pub const </span>XK_kana_MI: c_uint = <span class="number">0x4d0</span>;
+<span class="kw">pub const </span>XK_kana_MU: c_uint = <span class="number">0x4d1</span>;
+<span class="kw">pub const </span>XK_kana_ME: c_uint = <span class="number">0x4d2</span>;
+<span class="kw">pub const </span>XK_kana_MO: c_uint = <span class="number">0x4d3</span>;
+<span class="kw">pub const </span>XK_kana_YA: c_uint = <span class="number">0x4d4</span>;
+<span class="kw">pub const </span>XK_kana_YU: c_uint = <span class="number">0x4d5</span>;
+<span class="kw">pub const </span>XK_kana_YO: c_uint = <span class="number">0x4d6</span>;
+<span class="kw">pub const </span>XK_kana_RA: c_uint = <span class="number">0x4d7</span>;
+<span class="kw">pub const </span>XK_kana_RI: c_uint = <span class="number">0x4d8</span>;
+<span class="kw">pub const </span>XK_kana_RU: c_uint = <span class="number">0x4d9</span>;
+<span class="kw">pub const </span>XK_kana_RE: c_uint = <span class="number">0x4da</span>;
+<span class="kw">pub const </span>XK_kana_RO: c_uint = <span class="number">0x4db</span>;
+<span class="kw">pub const </span>XK_kana_WA: c_uint = <span class="number">0x4dc</span>;
+<span class="kw">pub const </span>XK_kana_N: c_uint = <span class="number">0x4dd</span>;
+<span class="kw">pub const </span>XK_voicedsound: c_uint = <span class="number">0x4de</span>;
+<span class="kw">pub const </span>XK_semivoicedsound: c_uint = <span class="number">0x4df</span>;
+<span class="kw">pub const </span>XK_kana_switch: c_uint = <span class="number">0xFF7E</span>;
+<span class="kw">pub const </span>XK_Arabic_comma: c_uint = <span class="number">0x5ac</span>;
+<span class="kw">pub const </span>XK_Arabic_semicolon: c_uint = <span class="number">0x5bb</span>;
+<span class="kw">pub const </span>XK_Arabic_question_mark: c_uint = <span class="number">0x5bf</span>;
+<span class="kw">pub const </span>XK_Arabic_hamza: c_uint = <span class="number">0x5c1</span>;
+<span class="kw">pub const </span>XK_Arabic_maddaonalef: c_uint = <span class="number">0x5c2</span>;
+<span class="kw">pub const </span>XK_Arabic_hamzaonalef: c_uint = <span class="number">0x5c3</span>;
+<span class="kw">pub const </span>XK_Arabic_hamzaonwaw: c_uint = <span class="number">0x5c4</span>;
+<span class="kw">pub const </span>XK_Arabic_hamzaunderalef: c_uint = <span class="number">0x5c5</span>;
+<span class="kw">pub const </span>XK_Arabic_hamzaonyeh: c_uint = <span class="number">0x5c6</span>;
+<span class="kw">pub const </span>XK_Arabic_alef: c_uint = <span class="number">0x5c7</span>;
+<span class="kw">pub const </span>XK_Arabic_beh: c_uint = <span class="number">0x5c8</span>;
+<span class="kw">pub const </span>XK_Arabic_tehmarbuta: c_uint = <span class="number">0x5c9</span>;
+<span class="kw">pub const </span>XK_Arabic_teh: c_uint = <span class="number">0x5ca</span>;
+<span class="kw">pub const </span>XK_Arabic_theh: c_uint = <span class="number">0x5cb</span>;
+<span class="kw">pub const </span>XK_Arabic_jeem: c_uint = <span class="number">0x5cc</span>;
+<span class="kw">pub const </span>XK_Arabic_hah: c_uint = <span class="number">0x5cd</span>;
+<span class="kw">pub const </span>XK_Arabic_khah: c_uint = <span class="number">0x5ce</span>;
+<span class="kw">pub const </span>XK_Arabic_dal: c_uint = <span class="number">0x5cf</span>;
+<span class="kw">pub const </span>XK_Arabic_thal: c_uint = <span class="number">0x5d0</span>;
+<span class="kw">pub const </span>XK_Arabic_ra: c_uint = <span class="number">0x5d1</span>;
+<span class="kw">pub const </span>XK_Arabic_zain: c_uint = <span class="number">0x5d2</span>;
+<span class="kw">pub const </span>XK_Arabic_seen: c_uint = <span class="number">0x5d3</span>;
+<span class="kw">pub const </span>XK_Arabic_sheen: c_uint = <span class="number">0x5d4</span>;
+<span class="kw">pub const </span>XK_Arabic_sad: c_uint = <span class="number">0x5d5</span>;
+<span class="kw">pub const </span>XK_Arabic_dad: c_uint = <span class="number">0x5d6</span>;
+<span class="kw">pub const </span>XK_Arabic_tah: c_uint = <span class="number">0x5d7</span>;
+<span class="kw">pub const </span>XK_Arabic_zah: c_uint = <span class="number">0x5d8</span>;
+<span class="kw">pub const </span>XK_Arabic_ain: c_uint = <span class="number">0x5d9</span>;
+<span class="kw">pub const </span>XK_Arabic_ghain: c_uint = <span class="number">0x5da</span>;
+<span class="kw">pub const </span>XK_Arabic_tatweel: c_uint = <span class="number">0x5e0</span>;
+<span class="kw">pub const </span>XK_Arabic_feh: c_uint = <span class="number">0x5e1</span>;
+<span class="kw">pub const </span>XK_Arabic_qaf: c_uint = <span class="number">0x5e2</span>;
+<span class="kw">pub const </span>XK_Arabic_kaf: c_uint = <span class="number">0x5e3</span>;
+<span class="kw">pub const </span>XK_Arabic_lam: c_uint = <span class="number">0x5e4</span>;
+<span class="kw">pub const </span>XK_Arabic_meem: c_uint = <span class="number">0x5e5</span>;
+<span class="kw">pub const </span>XK_Arabic_noon: c_uint = <span class="number">0x5e6</span>;
+<span class="kw">pub const </span>XK_Arabic_ha: c_uint = <span class="number">0x5e7</span>;
+<span class="kw">pub const </span>XK_Arabic_heh: c_uint = <span class="number">0x5e7</span>;
+<span class="kw">pub const </span>XK_Arabic_waw: c_uint = <span class="number">0x5e8</span>;
+<span class="kw">pub const </span>XK_Arabic_alefmaksura: c_uint = <span class="number">0x5e9</span>;
+<span class="kw">pub const </span>XK_Arabic_yeh: c_uint = <span class="number">0x5ea</span>;
+<span class="kw">pub const </span>XK_Arabic_fathatan: c_uint = <span class="number">0x5eb</span>;
+<span class="kw">pub const </span>XK_Arabic_dammatan: c_uint = <span class="number">0x5ec</span>;
+<span class="kw">pub const </span>XK_Arabic_kasratan: c_uint = <span class="number">0x5ed</span>;
+<span class="kw">pub const </span>XK_Arabic_fatha: c_uint = <span class="number">0x5ee</span>;
+<span class="kw">pub const </span>XK_Arabic_damma: c_uint = <span class="number">0x5ef</span>;
+<span class="kw">pub const </span>XK_Arabic_kasra: c_uint = <span class="number">0x5f0</span>;
+<span class="kw">pub const </span>XK_Arabic_shadda: c_uint = <span class="number">0x5f1</span>;
+<span class="kw">pub const </span>XK_Arabic_sukun: c_uint = <span class="number">0x5f2</span>;
+<span class="kw">pub const </span>XK_Arabic_switch: c_uint = <span class="number">0xFF7E</span>;
+<span class="kw">pub const </span>XK_Serbian_dje: c_uint = <span class="number">0x6a1</span>;
+<span class="kw">pub const </span>XK_Macedonia_gje: c_uint = <span class="number">0x6a2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_io: c_uint = <span class="number">0x6a3</span>;
+<span class="kw">pub const </span>XK_Ukrainian_ie: c_uint = <span class="number">0x6a4</span>;
+<span class="kw">pub const </span>XK_Ukranian_je: c_uint = <span class="number">0x6a4</span>;
+<span class="kw">pub const </span>XK_Macedonia_dse: c_uint = <span class="number">0x6a5</span>;
+<span class="kw">pub const </span>XK_Ukrainian_i: c_uint = <span class="number">0x6a6</span>;
+<span class="kw">pub const </span>XK_Ukranian_i: c_uint = <span class="number">0x6a6</span>;
+<span class="kw">pub const </span>XK_Ukrainian_yi: c_uint = <span class="number">0x6a7</span>;
+<span class="kw">pub const </span>XK_Ukranian_yi: c_uint = <span class="number">0x6a7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_je: c_uint = <span class="number">0x6a8</span>;
+<span class="kw">pub const </span>XK_Serbian_je: c_uint = <span class="number">0x6a8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_lje: c_uint = <span class="number">0x6a9</span>;
+<span class="kw">pub const </span>XK_Serbian_lje: c_uint = <span class="number">0x6a9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_nje: c_uint = <span class="number">0x6aa</span>;
+<span class="kw">pub const </span>XK_Serbian_nje: c_uint = <span class="number">0x6aa</span>;
+<span class="kw">pub const </span>XK_Serbian_tshe: c_uint = <span class="number">0x6ab</span>;
+<span class="kw">pub const </span>XK_Macedonia_kje: c_uint = <span class="number">0x6ac</span>;
+<span class="kw">pub const </span>XK_Byelorussian_shortu: c_uint = <span class="number">0x6ae</span>;
+<span class="kw">pub const </span>XK_Cyrillic_dzhe: c_uint = <span class="number">0x6af</span>;
+<span class="kw">pub const </span>XK_Serbian_dze: c_uint = <span class="number">0x6af</span>;
+<span class="kw">pub const </span>XK_numerosign: c_uint = <span class="number">0x6b0</span>;
+<span class="kw">pub const </span>XK_Serbian_DJE: c_uint = <span class="number">0x6b1</span>;
+<span class="kw">pub const </span>XK_Macedonia_GJE: c_uint = <span class="number">0x6b2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_IO: c_uint = <span class="number">0x6b3</span>;
+<span class="kw">pub const </span>XK_Ukrainian_IE: c_uint = <span class="number">0x6b4</span>;
+<span class="kw">pub const </span>XK_Ukranian_JE: c_uint = <span class="number">0x6b4</span>;
+<span class="kw">pub const </span>XK_Macedonia_DSE: c_uint = <span class="number">0x6b5</span>;
+<span class="kw">pub const </span>XK_Ukrainian_I: c_uint = <span class="number">0x6b6</span>;
+<span class="kw">pub const </span>XK_Ukranian_I: c_uint = <span class="number">0x6b6</span>;
+<span class="kw">pub const </span>XK_Ukrainian_YI: c_uint = <span class="number">0x6b7</span>;
+<span class="kw">pub const </span>XK_Ukranian_YI: c_uint = <span class="number">0x6b7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_JE: c_uint = <span class="number">0x6b8</span>;
+<span class="kw">pub const </span>XK_Serbian_JE: c_uint = <span class="number">0x6b8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_LJE: c_uint = <span class="number">0x6b9</span>;
+<span class="kw">pub const </span>XK_Serbian_LJE: c_uint = <span class="number">0x6b9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_NJE: c_uint = <span class="number">0x6ba</span>;
+<span class="kw">pub const </span>XK_Serbian_NJE: c_uint = <span class="number">0x6ba</span>;
+<span class="kw">pub const </span>XK_Serbian_TSHE: c_uint = <span class="number">0x6bb</span>;
+<span class="kw">pub const </span>XK_Macedonia_KJE: c_uint = <span class="number">0x6bc</span>;
+<span class="kw">pub const </span>XK_Byelorussian_SHORTU: c_uint = <span class="number">0x6be</span>;
+<span class="kw">pub const </span>XK_Cyrillic_DZHE: c_uint = <span class="number">0x6bf</span>;
+<span class="kw">pub const </span>XK_Serbian_DZE: c_uint = <span class="number">0x6bf</span>;
+<span class="kw">pub const </span>XK_Cyrillic_yu: c_uint = <span class="number">0x6c0</span>;
+<span class="kw">pub const </span>XK_Cyrillic_a: c_uint = <span class="number">0x6c1</span>;
+<span class="kw">pub const </span>XK_Cyrillic_be: c_uint = <span class="number">0x6c2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_tse: c_uint = <span class="number">0x6c3</span>;
+<span class="kw">pub const </span>XK_Cyrillic_de: c_uint = <span class="number">0x6c4</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ie: c_uint = <span class="number">0x6c5</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ef: c_uint = <span class="number">0x6c6</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ghe: c_uint = <span class="number">0x6c7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ha: c_uint = <span class="number">0x6c8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_i: c_uint = <span class="number">0x6c9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_shorti: c_uint = <span class="number">0x6ca</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ka: c_uint = <span class="number">0x6cb</span>;
+<span class="kw">pub const </span>XK_Cyrillic_el: c_uint = <span class="number">0x6cc</span>;
+<span class="kw">pub const </span>XK_Cyrillic_em: c_uint = <span class="number">0x6cd</span>;
+<span class="kw">pub const </span>XK_Cyrillic_en: c_uint = <span class="number">0x6ce</span>;
+<span class="kw">pub const </span>XK_Cyrillic_o: c_uint = <span class="number">0x6cf</span>;
+<span class="kw">pub const </span>XK_Cyrillic_pe: c_uint = <span class="number">0x6d0</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ya: c_uint = <span class="number">0x6d1</span>;
+<span class="kw">pub const </span>XK_Cyrillic_er: c_uint = <span class="number">0x6d2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_es: c_uint = <span class="number">0x6d3</span>;
+<span class="kw">pub const </span>XK_Cyrillic_te: c_uint = <span class="number">0x6d4</span>;
+<span class="kw">pub const </span>XK_Cyrillic_u: c_uint = <span class="number">0x6d5</span>;
+<span class="kw">pub const </span>XK_Cyrillic_zhe: c_uint = <span class="number">0x6d6</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ve: c_uint = <span class="number">0x6d7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_softsign: c_uint = <span class="number">0x6d8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_yeru: c_uint = <span class="number">0x6d9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ze: c_uint = <span class="number">0x6da</span>;
+<span class="kw">pub const </span>XK_Cyrillic_sha: c_uint = <span class="number">0x6db</span>;
+<span class="kw">pub const </span>XK_Cyrillic_e: c_uint = <span class="number">0x6dc</span>;
+<span class="kw">pub const </span>XK_Cyrillic_shcha: c_uint = <span class="number">0x6dd</span>;
+<span class="kw">pub const </span>XK_Cyrillic_che: c_uint = <span class="number">0x6de</span>;
+<span class="kw">pub const </span>XK_Cyrillic_hardsign: c_uint = <span class="number">0x6df</span>;
+<span class="kw">pub const </span>XK_Cyrillic_YU: c_uint = <span class="number">0x6e0</span>;
+<span class="kw">pub const </span>XK_Cyrillic_A: c_uint = <span class="number">0x6e1</span>;
+<span class="kw">pub const </span>XK_Cyrillic_BE: c_uint = <span class="number">0x6e2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_TSE: c_uint = <span class="number">0x6e3</span>;
+<span class="kw">pub const </span>XK_Cyrillic_DE: c_uint = <span class="number">0x6e4</span>;
+<span class="kw">pub const </span>XK_Cyrillic_IE: c_uint = <span class="number">0x6e5</span>;
+<span class="kw">pub const </span>XK_Cyrillic_EF: c_uint = <span class="number">0x6e6</span>;
+<span class="kw">pub const </span>XK_Cyrillic_GHE: c_uint = <span class="number">0x6e7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_HA: c_uint = <span class="number">0x6e8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_I: c_uint = <span class="number">0x6e9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_SHORTI: c_uint = <span class="number">0x6ea</span>;
+<span class="kw">pub const </span>XK_Cyrillic_KA: c_uint = <span class="number">0x6eb</span>;
+<span class="kw">pub const </span>XK_Cyrillic_EL: c_uint = <span class="number">0x6ec</span>;
+<span class="kw">pub const </span>XK_Cyrillic_EM: c_uint = <span class="number">0x6ed</span>;
+<span class="kw">pub const </span>XK_Cyrillic_EN: c_uint = <span class="number">0x6ee</span>;
+<span class="kw">pub const </span>XK_Cyrillic_O: c_uint = <span class="number">0x6ef</span>;
+<span class="kw">pub const </span>XK_Cyrillic_PE: c_uint = <span class="number">0x6f0</span>;
+<span class="kw">pub const </span>XK_Cyrillic_YA: c_uint = <span class="number">0x6f1</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ER: c_uint = <span class="number">0x6f2</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ES: c_uint = <span class="number">0x6f3</span>;
+<span class="kw">pub const </span>XK_Cyrillic_TE: c_uint = <span class="number">0x6f4</span>;
+<span class="kw">pub const </span>XK_Cyrillic_U: c_uint = <span class="number">0x6f5</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ZHE: c_uint = <span class="number">0x6f6</span>;
+<span class="kw">pub const </span>XK_Cyrillic_VE: c_uint = <span class="number">0x6f7</span>;
+<span class="kw">pub const </span>XK_Cyrillic_SOFTSIGN: c_uint = <span class="number">0x6f8</span>;
+<span class="kw">pub const </span>XK_Cyrillic_YERU: c_uint = <span class="number">0x6f9</span>;
+<span class="kw">pub const </span>XK_Cyrillic_ZE: c_uint = <span class="number">0x6fa</span>;
+<span class="kw">pub const </span>XK_Cyrillic_SHA: c_uint = <span class="number">0x6fb</span>;
+<span class="kw">pub const </span>XK_Cyrillic_E: c_uint = <span class="number">0x6fc</span>;
+<span class="kw">pub const </span>XK_Cyrillic_SHCHA: c_uint = <span class="number">0x6fd</span>;
+<span class="kw">pub const </span>XK_Cyrillic_CHE: c_uint = <span class="number">0x6fe</span>;
+<span class="kw">pub const </span>XK_Cyrillic_HARDSIGN: c_uint = <span class="number">0x6ff</span>;
+<span class="kw">pub const </span>XK_Greek_ALPHAaccent: c_uint = <span class="number">0x7a1</span>;
+<span class="kw">pub const </span>XK_Greek_EPSILONaccent: c_uint = <span class="number">0x7a2</span>;
+<span class="kw">pub const </span>XK_Greek_ETAaccent: c_uint = <span class="number">0x7a3</span>;
+<span class="kw">pub const </span>XK_Greek_IOTAaccent: c_uint = <span class="number">0x7a4</span>;
+<span class="kw">pub const </span>XK_Greek_IOTAdiaeresis: c_uint = <span class="number">0x7a5</span>;
+<span class="kw">pub const </span>XK_Greek_OMICRONaccent: c_uint = <span class="number">0x7a7</span>;
+<span class="kw">pub const </span>XK_Greek_UPSILONaccent: c_uint = <span class="number">0x7a8</span>;
+<span class="kw">pub const </span>XK_Greek_UPSILONdieresis: c_uint = <span class="number">0x7a9</span>;
+<span class="kw">pub const </span>XK_Greek_OMEGAaccent: c_uint = <span class="number">0x7ab</span>;
+<span class="kw">pub const </span>XK_Greek_accentdieresis: c_uint = <span class="number">0x7ae</span>;
+<span class="kw">pub const </span>XK_Greek_horizbar: c_uint = <span class="number">0x7af</span>;
+<span class="kw">pub const </span>XK_Greek_alphaaccent: c_uint = <span class="number">0x7b1</span>;
+<span class="kw">pub const </span>XK_Greek_epsilonaccent: c_uint = <span class="number">0x7b2</span>;
+<span class="kw">pub const </span>XK_Greek_etaaccent: c_uint = <span class="number">0x7b3</span>;
+<span class="kw">pub const </span>XK_Greek_iotaaccent: c_uint = <span class="number">0x7b4</span>;
+<span class="kw">pub const </span>XK_Greek_iotadieresis: c_uint = <span class="number">0x7b5</span>;
+<span class="kw">pub const </span>XK_Greek_iotaaccentdieresis: c_uint = <span class="number">0x7b6</span>;
+<span class="kw">pub const </span>XK_Greek_omicronaccent: c_uint = <span class="number">0x7b7</span>;
+<span class="kw">pub const </span>XK_Greek_upsilonaccent: c_uint = <span class="number">0x7b8</span>;
+<span class="kw">pub const </span>XK_Greek_upsilondieresis: c_uint = <span class="number">0x7b9</span>;
+<span class="kw">pub const </span>XK_Greek_upsilonaccentdieresis: c_uint = <span class="number">0x7ba</span>;
+<span class="kw">pub const </span>XK_Greek_omegaaccent: c_uint = <span class="number">0x7bb</span>;
+<span class="kw">pub const </span>XK_Greek_ALPHA: c_uint = <span class="number">0x7c1</span>;
+<span class="kw">pub const </span>XK_Greek_BETA: c_uint = <span class="number">0x7c2</span>;
+<span class="kw">pub const </span>XK_Greek_GAMMA: c_uint = <span class="number">0x7c3</span>;
+<span class="kw">pub const </span>XK_Greek_DELTA: c_uint = <span class="number">0x7c4</span>;
+<span class="kw">pub const </span>XK_Greek_EPSILON: c_uint = <span class="number">0x7c5</span>;
+<span class="kw">pub const </span>XK_Greek_ZETA: c_uint = <span class="number">0x7c6</span>;
+<span class="kw">pub const </span>XK_Greek_ETA: c_uint = <span class="number">0x7c7</span>;
+<span class="kw">pub const </span>XK_Greek_THETA: c_uint = <span class="number">0x7c8</span>;
+<span class="kw">pub const </span>XK_Greek_IOTA: c_uint = <span class="number">0x7c9</span>;
+<span class="kw">pub const </span>XK_Greek_KAPPA: c_uint = <span class="number">0x7ca</span>;
+<span class="kw">pub const </span>XK_Greek_LAMDA: c_uint = <span class="number">0x7cb</span>;
+<span class="kw">pub const </span>XK_Greek_LAMBDA: c_uint = <span class="number">0x7cb</span>;
+<span class="kw">pub const </span>XK_Greek_MU: c_uint = <span class="number">0x7cc</span>;
+<span class="kw">pub const </span>XK_Greek_NU: c_uint = <span class="number">0x7cd</span>;
+<span class="kw">pub const </span>XK_Greek_XI: c_uint = <span class="number">0x7ce</span>;
+<span class="kw">pub const </span>XK_Greek_OMICRON: c_uint = <span class="number">0x7cf</span>;
+<span class="kw">pub const </span>XK_Greek_PI: c_uint = <span class="number">0x7d0</span>;
+<span class="kw">pub const </span>XK_Greek_RHO: c_uint = <span class="number">0x7d1</span>;
+<span class="kw">pub const </span>XK_Greek_SIGMA: c_uint = <span class="number">0x7d2</span>;
+<span class="kw">pub const </span>XK_Greek_TAU: c_uint = <span class="number">0x7d4</span>;
+<span class="kw">pub const </span>XK_Greek_UPSILON: c_uint = <span class="number">0x7d5</span>;
+<span class="kw">pub const </span>XK_Greek_PHI: c_uint = <span class="number">0x7d6</span>;
+<span class="kw">pub const </span>XK_Greek_CHI: c_uint = <span class="number">0x7d7</span>;
+<span class="kw">pub const </span>XK_Greek_PSI: c_uint = <span class="number">0x7d8</span>;
+<span class="kw">pub const </span>XK_Greek_OMEGA: c_uint = <span class="number">0x7d9</span>;
+<span class="kw">pub const </span>XK_Greek_alpha: c_uint = <span class="number">0x7e1</span>;
+<span class="kw">pub const </span>XK_Greek_beta: c_uint = <span class="number">0x7e2</span>;
+<span class="kw">pub const </span>XK_Greek_gamma: c_uint = <span class="number">0x7e3</span>;
+<span class="kw">pub const </span>XK_Greek_delta: c_uint = <span class="number">0x7e4</span>;
+<span class="kw">pub const </span>XK_Greek_epsilon: c_uint = <span class="number">0x7e5</span>;
+<span class="kw">pub const </span>XK_Greek_zeta: c_uint = <span class="number">0x7e6</span>;
+<span class="kw">pub const </span>XK_Greek_eta: c_uint = <span class="number">0x7e7</span>;
+<span class="kw">pub const </span>XK_Greek_theta: c_uint = <span class="number">0x7e8</span>;
+<span class="kw">pub const </span>XK_Greek_iota: c_uint = <span class="number">0x7e9</span>;
+<span class="kw">pub const </span>XK_Greek_kappa: c_uint = <span class="number">0x7ea</span>;
+<span class="kw">pub const </span>XK_Greek_lamda: c_uint = <span class="number">0x7eb</span>;
+<span class="kw">pub const </span>XK_Greek_lambda: c_uint = <span class="number">0x7eb</span>;
+<span class="kw">pub const </span>XK_Greek_mu: c_uint = <span class="number">0x7ec</span>;
+<span class="kw">pub const </span>XK_Greek_nu: c_uint = <span class="number">0x7ed</span>;
+<span class="kw">pub const </span>XK_Greek_xi: c_uint = <span class="number">0x7ee</span>;
+<span class="kw">pub const </span>XK_Greek_omicron: c_uint = <span class="number">0x7ef</span>;
+<span class="kw">pub const </span>XK_Greek_pi: c_uint = <span class="number">0x7f0</span>;
+<span class="kw">pub const </span>XK_Greek_rho: c_uint = <span class="number">0x7f1</span>;
+<span class="kw">pub const </span>XK_Greek_sigma: c_uint = <span class="number">0x7f2</span>;
+<span class="kw">pub const </span>XK_Greek_finalsmallsigma: c_uint = <span class="number">0x7f3</span>;
+<span class="kw">pub const </span>XK_Greek_tau: c_uint = <span class="number">0x7f4</span>;
+<span class="kw">pub const </span>XK_Greek_upsilon: c_uint = <span class="number">0x7f5</span>;
+<span class="kw">pub const </span>XK_Greek_phi: c_uint = <span class="number">0x7f6</span>;
+<span class="kw">pub const </span>XK_Greek_chi: c_uint = <span class="number">0x7f7</span>;
+<span class="kw">pub const </span>XK_Greek_psi: c_uint = <span class="number">0x7f8</span>;
+<span class="kw">pub const </span>XK_Greek_omega: c_uint = <span class="number">0x7f9</span>;
+<span class="kw">pub const </span>XK_Greek_switch: c_uint = <span class="number">0xFF7E</span>;
+<span class="kw">pub const </span>XK_leftradical: c_uint = <span class="number">0x8a1</span>;
+<span class="kw">pub const </span>XK_topleftradical: c_uint = <span class="number">0x8a2</span>;
+<span class="kw">pub const </span>XK_horizconnector: c_uint = <span class="number">0x8a3</span>;
+<span class="kw">pub const </span>XK_topintegral: c_uint = <span class="number">0x8a4</span>;
+<span class="kw">pub const </span>XK_botintegral: c_uint = <span class="number">0x8a5</span>;
+<span class="kw">pub const </span>XK_vertconnector: c_uint = <span class="number">0x8a6</span>;
+<span class="kw">pub const </span>XK_topleftsqbracket: c_uint = <span class="number">0x8a7</span>;
+<span class="kw">pub const </span>XK_botleftsqbracket: c_uint = <span class="number">0x8a8</span>;
+<span class="kw">pub const </span>XK_toprightsqbracket: c_uint = <span class="number">0x8a9</span>;
+<span class="kw">pub const </span>XK_botrightsqbracket: c_uint = <span class="number">0x8aa</span>;
+<span class="kw">pub const </span>XK_topleftparens: c_uint = <span class="number">0x8ab</span>;
+<span class="kw">pub const </span>XK_botleftparens: c_uint = <span class="number">0x8ac</span>;
+<span class="kw">pub const </span>XK_toprightparens: c_uint = <span class="number">0x8ad</span>;
+<span class="kw">pub const </span>XK_botrightparens: c_uint = <span class="number">0x8ae</span>;
+<span class="kw">pub const </span>XK_leftmiddlecurlybrace: c_uint = <span class="number">0x8af</span>;
+<span class="kw">pub const </span>XK_rightmiddlecurlybrace: c_uint = <span class="number">0x8b0</span>;
+<span class="kw">pub const </span>XK_topleftsummation: c_uint = <span class="number">0x8b1</span>;
+<span class="kw">pub const </span>XK_botleftsummation: c_uint = <span class="number">0x8b2</span>;
+<span class="kw">pub const </span>XK_topvertsummationconnector: c_uint = <span class="number">0x8b3</span>;
+<span class="kw">pub const </span>XK_botvertsummationconnector: c_uint = <span class="number">0x8b4</span>;
+<span class="kw">pub const </span>XK_toprightsummation: c_uint = <span class="number">0x8b5</span>;
+<span class="kw">pub const </span>XK_botrightsummation: c_uint = <span class="number">0x8b6</span>;
+<span class="kw">pub const </span>XK_rightmiddlesummation: c_uint = <span class="number">0x8b7</span>;
+<span class="kw">pub const </span>XK_lessthanequal: c_uint = <span class="number">0x8bc</span>;
+<span class="kw">pub const </span>XK_notequal: c_uint = <span class="number">0x8bd</span>;
+<span class="kw">pub const </span>XK_greaterthanequal: c_uint = <span class="number">0x8be</span>;
+<span class="kw">pub const </span>XK_integral: c_uint = <span class="number">0x8bf</span>;
+<span class="kw">pub const </span>XK_therefore: c_uint = <span class="number">0x8c0</span>;
+<span class="kw">pub const </span>XK_variation: c_uint = <span class="number">0x8c1</span>;
+<span class="kw">pub const </span>XK_infinity: c_uint = <span class="number">0x8c2</span>;
+<span class="kw">pub const </span>XK_nabla: c_uint = <span class="number">0x8c5</span>;
+<span class="kw">pub const </span>XK_approximate: c_uint = <span class="number">0x8c8</span>;
+<span class="kw">pub const </span>XK_similarequal: c_uint = <span class="number">0x8c9</span>;
+<span class="kw">pub const </span>XK_ifonlyif: c_uint = <span class="number">0x8cd</span>;
+<span class="kw">pub const </span>XK_implies: c_uint = <span class="number">0x8ce</span>;
+<span class="kw">pub const </span>XK_identical: c_uint = <span class="number">0x8cf</span>;
+<span class="kw">pub const </span>XK_radical: c_uint = <span class="number">0x8d6</span>;
+<span class="kw">pub const </span>XK_includedin: c_uint = <span class="number">0x8da</span>;
+<span class="kw">pub const </span>XK_includes: c_uint = <span class="number">0x8db</span>;
+<span class="kw">pub const </span>XK_intersection: c_uint = <span class="number">0x8dc</span>;
+<span class="kw">pub const </span>XK_union: c_uint = <span class="number">0x8dd</span>;
+<span class="kw">pub const </span>XK_logicaland: c_uint = <span class="number">0x8de</span>;
+<span class="kw">pub const </span>XK_logicalor: c_uint = <span class="number">0x8df</span>;
+<span class="kw">pub const </span>XK_partialderivative: c_uint = <span class="number">0x8ef</span>;
+<span class="kw">pub const </span>XK_function: c_uint = <span class="number">0x8f6</span>;
+<span class="kw">pub const </span>XK_leftarrow: c_uint = <span class="number">0x8fb</span>;
+<span class="kw">pub const </span>XK_uparrow: c_uint = <span class="number">0x8fc</span>;
+<span class="kw">pub const </span>XK_rightarrow: c_uint = <span class="number">0x8fd</span>;
+<span class="kw">pub const </span>XK_downarrow: c_uint = <span class="number">0x8fe</span>;
+<span class="kw">pub const </span>XK_blank: c_uint = <span class="number">0x9df</span>;
+<span class="kw">pub const </span>XK_soliddiamond: c_uint = <span class="number">0x9e0</span>;
+<span class="kw">pub const </span>XK_checkerboard: c_uint = <span class="number">0x9e1</span>;
+<span class="kw">pub const </span>XK_ht: c_uint = <span class="number">0x9e2</span>;
+<span class="kw">pub const </span>XK_ff: c_uint = <span class="number">0x9e3</span>;
+<span class="kw">pub const </span>XK_cr: c_uint = <span class="number">0x9e4</span>;
+<span class="kw">pub const </span>XK_lf: c_uint = <span class="number">0x9e5</span>;
+<span class="kw">pub const </span>XK_nl: c_uint = <span class="number">0x9e8</span>;
+<span class="kw">pub const </span>XK_vt: c_uint = <span class="number">0x9e9</span>;
+<span class="kw">pub const </span>XK_lowrightcorner: c_uint = <span class="number">0x9ea</span>;
+<span class="kw">pub const </span>XK_uprightcorner: c_uint = <span class="number">0x9eb</span>;
+<span class="kw">pub const </span>XK_upleftcorner: c_uint = <span class="number">0x9ec</span>;
+<span class="kw">pub const </span>XK_lowleftcorner: c_uint = <span class="number">0x9ed</span>;
+<span class="kw">pub const </span>XK_crossinglines: c_uint = <span class="number">0x9ee</span>;
+<span class="kw">pub const </span>XK_horizlinescan1: c_uint = <span class="number">0x9ef</span>;
+<span class="kw">pub const </span>XK_horizlinescan3: c_uint = <span class="number">0x9f0</span>;
+<span class="kw">pub const </span>XK_horizlinescan5: c_uint = <span class="number">0x9f1</span>;
+<span class="kw">pub const </span>XK_horizlinescan7: c_uint = <span class="number">0x9f2</span>;
+<span class="kw">pub const </span>XK_horizlinescan9: c_uint = <span class="number">0x9f3</span>;
+<span class="kw">pub const </span>XK_leftt: c_uint = <span class="number">0x9f4</span>;
+<span class="kw">pub const </span>XK_rightt: c_uint = <span class="number">0x9f5</span>;
+<span class="kw">pub const </span>XK_bott: c_uint = <span class="number">0x9f6</span>;
+<span class="kw">pub const </span>XK_topt: c_uint = <span class="number">0x9f7</span>;
+<span class="kw">pub const </span>XK_vertbar: c_uint = <span class="number">0x9f8</span>;
+<span class="kw">pub const </span>XK_emspace: c_uint = <span class="number">0xaa1</span>;
+<span class="kw">pub const </span>XK_enspace: c_uint = <span class="number">0xaa2</span>;
+<span class="kw">pub const </span>XK_em3space: c_uint = <span class="number">0xaa3</span>;
+<span class="kw">pub const </span>XK_em4space: c_uint = <span class="number">0xaa4</span>;
+<span class="kw">pub const </span>XK_digitspace: c_uint = <span class="number">0xaa5</span>;
+<span class="kw">pub const </span>XK_punctspace: c_uint = <span class="number">0xaa6</span>;
+<span class="kw">pub const </span>XK_thinspace: c_uint = <span class="number">0xaa7</span>;
+<span class="kw">pub const </span>XK_hairspace: c_uint = <span class="number">0xaa8</span>;
+<span class="kw">pub const </span>XK_emdash: c_uint = <span class="number">0xaa9</span>;
+<span class="kw">pub const </span>XK_endash: c_uint = <span class="number">0xaaa</span>;
+<span class="kw">pub const </span>XK_signifblank: c_uint = <span class="number">0xaac</span>;
+<span class="kw">pub const </span>XK_ellipsis: c_uint = <span class="number">0xaae</span>;
+<span class="kw">pub const </span>XK_doubbaselinedot: c_uint = <span class="number">0xaaf</span>;
+<span class="kw">pub const </span>XK_onethird: c_uint = <span class="number">0xab0</span>;
+<span class="kw">pub const </span>XK_twothirds: c_uint = <span class="number">0xab1</span>;
+<span class="kw">pub const </span>XK_onefifth: c_uint = <span class="number">0xab2</span>;
+<span class="kw">pub const </span>XK_twofifths: c_uint = <span class="number">0xab3</span>;
+<span class="kw">pub const </span>XK_threefifths: c_uint = <span class="number">0xab4</span>;
+<span class="kw">pub const </span>XK_fourfifths: c_uint = <span class="number">0xab5</span>;
+<span class="kw">pub const </span>XK_onesixth: c_uint = <span class="number">0xab6</span>;
+<span class="kw">pub const </span>XK_fivesixths: c_uint = <span class="number">0xab7</span>;
+<span class="kw">pub const </span>XK_careof: c_uint = <span class="number">0xab8</span>;
+<span class="kw">pub const </span>XK_figdash: c_uint = <span class="number">0xabb</span>;
+<span class="kw">pub const </span>XK_leftanglebracket: c_uint = <span class="number">0xabc</span>;
+<span class="kw">pub const </span>XK_decimalpoint: c_uint = <span class="number">0xabd</span>;
+<span class="kw">pub const </span>XK_rightanglebracket: c_uint = <span class="number">0xabe</span>;
+<span class="kw">pub const </span>XK_marker: c_uint = <span class="number">0xabf</span>;
+<span class="kw">pub const </span>XK_oneeighth: c_uint = <span class="number">0xac3</span>;
+<span class="kw">pub const </span>XK_threeeighths: c_uint = <span class="number">0xac4</span>;
+<span class="kw">pub const </span>XK_fiveeighths: c_uint = <span class="number">0xac5</span>;
+<span class="kw">pub const </span>XK_seveneighths: c_uint = <span class="number">0xac6</span>;
+<span class="kw">pub const </span>XK_trademark: c_uint = <span class="number">0xac9</span>;
+<span class="kw">pub const </span>XK_signaturemark: c_uint = <span class="number">0xaca</span>;
+<span class="kw">pub const </span>XK_trademarkincircle: c_uint = <span class="number">0xacb</span>;
+<span class="kw">pub const </span>XK_leftopentriangle: c_uint = <span class="number">0xacc</span>;
+<span class="kw">pub const </span>XK_rightopentriangle: c_uint = <span class="number">0xacd</span>;
+<span class="kw">pub const </span>XK_emopencircle: c_uint = <span class="number">0xace</span>;
+<span class="kw">pub const </span>XK_emopenrectangle: c_uint = <span class="number">0xacf</span>;
+<span class="kw">pub const </span>XK_leftsinglequotemark: c_uint = <span class="number">0xad0</span>;
+<span class="kw">pub const </span>XK_rightsinglequotemark: c_uint = <span class="number">0xad1</span>;
+<span class="kw">pub const </span>XK_leftdoublequotemark: c_uint = <span class="number">0xad2</span>;
+<span class="kw">pub const </span>XK_rightdoublequotemark: c_uint = <span class="number">0xad3</span>;
+<span class="kw">pub const </span>XK_prescription: c_uint = <span class="number">0xad4</span>;
+<span class="kw">pub const </span>XK_minutes: c_uint = <span class="number">0xad6</span>;
+<span class="kw">pub const </span>XK_seconds: c_uint = <span class="number">0xad7</span>;
+<span class="kw">pub const </span>XK_latincross: c_uint = <span class="number">0xad9</span>;
+<span class="kw">pub const </span>XK_hexagram: c_uint = <span class="number">0xada</span>;
+<span class="kw">pub const </span>XK_filledrectbullet: c_uint = <span class="number">0xadb</span>;
+<span class="kw">pub const </span>XK_filledlefttribullet: c_uint = <span class="number">0xadc</span>;
+<span class="kw">pub const </span>XK_filledrighttribullet: c_uint = <span class="number">0xadd</span>;
+<span class="kw">pub const </span>XK_emfilledcircle: c_uint = <span class="number">0xade</span>;
+<span class="kw">pub const </span>XK_emfilledrect: c_uint = <span class="number">0xadf</span>;
+<span class="kw">pub const </span>XK_enopencircbullet: c_uint = <span class="number">0xae0</span>;
+<span class="kw">pub const </span>XK_enopensquarebullet: c_uint = <span class="number">0xae1</span>;
+<span class="kw">pub const </span>XK_openrectbullet: c_uint = <span class="number">0xae2</span>;
+<span class="kw">pub const </span>XK_opentribulletup: c_uint = <span class="number">0xae3</span>;
+<span class="kw">pub const </span>XK_opentribulletdown: c_uint = <span class="number">0xae4</span>;
+<span class="kw">pub const </span>XK_openstar: c_uint = <span class="number">0xae5</span>;
+<span class="kw">pub const </span>XK_enfilledcircbullet: c_uint = <span class="number">0xae6</span>;
+<span class="kw">pub const </span>XK_enfilledsqbullet: c_uint = <span class="number">0xae7</span>;
+<span class="kw">pub const </span>XK_filledtribulletup: c_uint = <span class="number">0xae8</span>;
+<span class="kw">pub const </span>XK_filledtribulletdown: c_uint = <span class="number">0xae9</span>;
+<span class="kw">pub const </span>XK_leftpointer: c_uint = <span class="number">0xaea</span>;
+<span class="kw">pub const </span>XK_rightpointer: c_uint = <span class="number">0xaeb</span>;
+<span class="kw">pub const </span>XK_club: c_uint = <span class="number">0xaec</span>;
+<span class="kw">pub const </span>XK_diamond: c_uint = <span class="number">0xaed</span>;
+<span class="kw">pub const </span>XK_heart: c_uint = <span class="number">0xaee</span>;
+<span class="kw">pub const </span>XK_maltesecross: c_uint = <span class="number">0xaf0</span>;
+<span class="kw">pub const </span>XK_dagger: c_uint = <span class="number">0xaf1</span>;
+<span class="kw">pub const </span>XK_doubledagger: c_uint = <span class="number">0xaf2</span>;
+<span class="kw">pub const </span>XK_checkmark: c_uint = <span class="number">0xaf3</span>;
+<span class="kw">pub const </span>XK_ballotcross: c_uint = <span class="number">0xaf4</span>;
+<span class="kw">pub const </span>XK_musicalsharp: c_uint = <span class="number">0xaf5</span>;
+<span class="kw">pub const </span>XK_musicalflat: c_uint = <span class="number">0xaf6</span>;
+<span class="kw">pub const </span>XK_malesymbol: c_uint = <span class="number">0xaf7</span>;
+<span class="kw">pub const </span>XK_femalesymbol: c_uint = <span class="number">0xaf8</span>;
+<span class="kw">pub const </span>XK_telephone: c_uint = <span class="number">0xaf9</span>;
+<span class="kw">pub const </span>XK_telephonerecorder: c_uint = <span class="number">0xafa</span>;
+<span class="kw">pub const </span>XK_phonographcopyright: c_uint = <span class="number">0xafb</span>;
+<span class="kw">pub const </span>XK_caret: c_uint = <span class="number">0xafc</span>;
+<span class="kw">pub const </span>XK_singlelowquotemark: c_uint = <span class="number">0xafd</span>;
+<span class="kw">pub const </span>XK_doublelowquotemark: c_uint = <span class="number">0xafe</span>;
+<span class="kw">pub const </span>XK_cursor: c_uint = <span class="number">0xaff</span>;
+<span class="kw">pub const </span>XK_leftcaret: c_uint = <span class="number">0xba3</span>;
+<span class="kw">pub const </span>XK_rightcaret: c_uint = <span class="number">0xba6</span>;
+<span class="kw">pub const </span>XK_downcaret: c_uint = <span class="number">0xba8</span>;
+<span class="kw">pub const </span>XK_upcaret: c_uint = <span class="number">0xba9</span>;
+<span class="kw">pub const </span>XK_overbar: c_uint = <span class="number">0xbc0</span>;
+<span class="kw">pub const </span>XK_downtack: c_uint = <span class="number">0xbc2</span>;
+<span class="kw">pub const </span>XK_upshoe: c_uint = <span class="number">0xbc3</span>;
+<span class="kw">pub const </span>XK_downstile: c_uint = <span class="number">0xbc4</span>;
+<span class="kw">pub const </span>XK_underbar: c_uint = <span class="number">0xbc6</span>;
+<span class="kw">pub const </span>XK_jot: c_uint = <span class="number">0xbca</span>;
+<span class="kw">pub const </span>XK_quad: c_uint = <span class="number">0xbcc</span>;
+<span class="kw">pub const </span>XK_uptack: c_uint = <span class="number">0xbce</span>;
+<span class="kw">pub const </span>XK_circle: c_uint = <span class="number">0xbcf</span>;
+<span class="kw">pub const </span>XK_upstile: c_uint = <span class="number">0xbd3</span>;
+<span class="kw">pub const </span>XK_downshoe: c_uint = <span class="number">0xbd6</span>;
+<span class="kw">pub const </span>XK_rightshoe: c_uint = <span class="number">0xbd8</span>;
+<span class="kw">pub const </span>XK_leftshoe: c_uint = <span class="number">0xbda</span>;
+<span class="kw">pub const </span>XK_lefttack: c_uint = <span class="number">0xbdc</span>;
+<span class="kw">pub const </span>XK_righttack: c_uint = <span class="number">0xbfc</span>;
+<span class="kw">pub const </span>XK_hebrew_doublelowline: c_uint = <span class="number">0xcdf</span>;
+<span class="kw">pub const </span>XK_hebrew_aleph: c_uint = <span class="number">0xce0</span>;
+<span class="kw">pub const </span>XK_hebrew_bet: c_uint = <span class="number">0xce1</span>;
+<span class="kw">pub const </span>XK_hebrew_beth: c_uint = <span class="number">0xce1</span>;
+<span class="kw">pub const </span>XK_hebrew_gimel: c_uint = <span class="number">0xce2</span>;
+<span class="kw">pub const </span>XK_hebrew_gimmel: c_uint = <span class="number">0xce2</span>;
+<span class="kw">pub const </span>XK_hebrew_dalet: c_uint = <span class="number">0xce3</span>;
+<span class="kw">pub const </span>XK_hebrew_daleth: c_uint = <span class="number">0xce3</span>;
+<span class="kw">pub const </span>XK_hebrew_he: c_uint = <span class="number">0xce4</span>;
+<span class="kw">pub const </span>XK_hebrew_waw: c_uint = <span class="number">0xce5</span>;
+<span class="kw">pub const </span>XK_hebrew_zain: c_uint = <span class="number">0xce6</span>;
+<span class="kw">pub const </span>XK_hebrew_zayin: c_uint = <span class="number">0xce6</span>;
+<span class="kw">pub const </span>XK_hebrew_chet: c_uint = <span class="number">0xce7</span>;
+<span class="kw">pub const </span>XK_hebrew_het: c_uint = <span class="number">0xce7</span>;
+<span class="kw">pub const </span>XK_hebrew_tet: c_uint = <span class="number">0xce8</span>;
+<span class="kw">pub const </span>XK_hebrew_teth: c_uint = <span class="number">0xce8</span>;
+<span class="kw">pub const </span>XK_hebrew_yod: c_uint = <span class="number">0xce9</span>;
+<span class="kw">pub const </span>XK_hebrew_finalkaph: c_uint = <span class="number">0xcea</span>;
+<span class="kw">pub const </span>XK_hebrew_kaph: c_uint = <span class="number">0xceb</span>;
+<span class="kw">pub const </span>XK_hebrew_lamed: c_uint = <span class="number">0xcec</span>;
+<span class="kw">pub const </span>XK_hebrew_finalmem: c_uint = <span class="number">0xced</span>;
+<span class="kw">pub const </span>XK_hebrew_mem: c_uint = <span class="number">0xcee</span>;
+<span class="kw">pub const </span>XK_hebrew_finalnun: c_uint = <span class="number">0xcef</span>;
+<span class="kw">pub const </span>XK_hebrew_nun: c_uint = <span class="number">0xcf0</span>;
+<span class="kw">pub const </span>XK_hebrew_samech: c_uint = <span class="number">0xcf1</span>;
+<span class="kw">pub const </span>XK_hebrew_samekh: c_uint = <span class="number">0xcf1</span>;
+<span class="kw">pub const </span>XK_hebrew_ayin: c_uint = <span class="number">0xcf2</span>;
+<span class="kw">pub const </span>XK_hebrew_finalpe: c_uint = <span class="number">0xcf3</span>;
+<span class="kw">pub const </span>XK_hebrew_pe: c_uint = <span class="number">0xcf4</span>;
+<span class="kw">pub const </span>XK_hebrew_finalzade: c_uint = <span class="number">0xcf5</span>;
+<span class="kw">pub const </span>XK_hebrew_finalzadi: c_uint = <span class="number">0xcf5</span>;
+<span class="kw">pub const </span>XK_hebrew_zade: c_uint = <span class="number">0xcf6</span>;
+<span class="kw">pub const </span>XK_hebrew_zadi: c_uint = <span class="number">0xcf6</span>;
+<span class="kw">pub const </span>XK_hebrew_qoph: c_uint = <span class="number">0xcf7</span>;
+<span class="kw">pub const </span>XK_hebrew_kuf: c_uint = <span class="number">0xcf7</span>;
+<span class="kw">pub const </span>XK_hebrew_resh: c_uint = <span class="number">0xcf8</span>;
+<span class="kw">pub const </span>XK_hebrew_shin: c_uint = <span class="number">0xcf9</span>;
+<span class="kw">pub const </span>XK_hebrew_taw: c_uint = <span class="number">0xcfa</span>;
+<span class="kw">pub const </span>XK_hebrew_taf: c_uint = <span class="number">0xcfa</span>;
+<span class="kw">pub const </span>XK_Hebrew_switch: c_uint = <span class="number">0xFF7E</span>;
+
+<span class="kw">pub const </span>XF86XK_ModeLock: c_uint = <span class="number">0x1008FF01</span>;
+<span class="kw">pub const </span>XF86XK_MonBrightnessUp: c_uint = <span class="number">0x1008FF02</span>;
+<span class="kw">pub const </span>XF86XK_MonBrightnessDown: c_uint = <span class="number">0x1008FF03</span>;
+<span class="kw">pub const </span>XF86XK_KbdLightOnOff: c_uint = <span class="number">0x1008FF04</span>;
+<span class="kw">pub const </span>XF86XK_KbdBrightnessUp: c_uint = <span class="number">0x1008FF05</span>;
+<span class="kw">pub const </span>XF86XK_KbdBrightnessDown: c_uint = <span class="number">0x1008FF06</span>;
+<span class="kw">pub const </span>XF86XK_Standby: c_uint = <span class="number">0x1008FF10</span>;
+<span class="kw">pub const </span>XF86XK_AudioLowerVolume: c_uint = <span class="number">0x1008FF11</span>;
+<span class="kw">pub const </span>XF86XK_AudioMute: c_uint = <span class="number">0x1008FF12</span>;
+<span class="kw">pub const </span>XF86XK_AudioRaiseVolume: c_uint = <span class="number">0x1008FF13</span>;
+<span class="kw">pub const </span>XF86XK_AudioPlay: c_uint = <span class="number">0x1008FF14</span>;
+<span class="kw">pub const </span>XF86XK_AudioStop: c_uint = <span class="number">0x1008FF15</span>;
+<span class="kw">pub const </span>XF86XK_AudioPrev: c_uint = <span class="number">0x1008FF16</span>;
+<span class="kw">pub const </span>XF86XK_AudioNext: c_uint = <span class="number">0x1008FF17</span>;
+<span class="kw">pub const </span>XF86XK_HomePage: c_uint = <span class="number">0x1008FF18</span>;
+<span class="kw">pub const </span>XF86XK_Mail: c_uint = <span class="number">0x1008FF19</span>;
+<span class="kw">pub const </span>XF86XK_Start: c_uint = <span class="number">0x1008FF1A</span>;
+<span class="kw">pub const </span>XF86XK_Search: c_uint = <span class="number">0x1008FF1B</span>;
+<span class="kw">pub const </span>XF86XK_AudioRecord: c_uint = <span class="number">0x1008FF1C</span>;
+<span class="kw">pub const </span>XF86XK_Calculator: c_uint = <span class="number">0x1008FF1D</span>;
+<span class="kw">pub const </span>XF86XK_Memo: c_uint = <span class="number">0x1008FF1E</span>;
+<span class="kw">pub const </span>XF86XK_ToDoList: c_uint = <span class="number">0x1008FF1F</span>;
+<span class="kw">pub const </span>XF86XK_Calendar: c_uint = <span class="number">0x1008FF20</span>;
+<span class="kw">pub const </span>XF86XK_PowerDown: c_uint = <span class="number">0x1008FF21</span>;
+<span class="kw">pub const </span>XF86XK_ContrastAdjust: c_uint = <span class="number">0x1008FF22</span>;
+<span class="kw">pub const </span>XF86XK_RockerUp: c_uint = <span class="number">0x1008FF23</span>;
+<span class="kw">pub const </span>XF86XK_RockerDown: c_uint = <span class="number">0x1008FF24</span>;
+<span class="kw">pub const </span>XF86XK_RockerEnter: c_uint = <span class="number">0x1008FF25</span>;
+<span class="kw">pub const </span>XF86XK_Back: c_uint = <span class="number">0x1008FF26</span>;
+<span class="kw">pub const </span>XF86XK_Forward: c_uint = <span class="number">0x1008FF27</span>;
+<span class="kw">pub const </span>XF86XK_Stop: c_uint = <span class="number">0x1008FF28</span>;
+<span class="kw">pub const </span>XF86XK_Refresh: c_uint = <span class="number">0x1008FF29</span>;
+<span class="kw">pub const </span>XF86XK_PowerOff: c_uint = <span class="number">0x1008FF2A</span>;
+<span class="kw">pub const </span>XF86XK_WakeUp: c_uint = <span class="number">0x1008FF2B</span>;
+<span class="kw">pub const </span>XF86XK_Eject: c_uint = <span class="number">0x1008FF2C</span>;
+<span class="kw">pub const </span>XF86XK_ScreenSaver: c_uint = <span class="number">0x1008FF2D</span>;
+<span class="kw">pub const </span>XF86XK_WWW: c_uint = <span class="number">0x1008FF2E</span>;
+<span class="kw">pub const </span>XF86XK_Sleep: c_uint = <span class="number">0x1008FF2F</span>;
+<span class="kw">pub const </span>XF86XK_Favorites: c_uint = <span class="number">0x1008FF30</span>;
+<span class="kw">pub const </span>XF86XK_AudioPause: c_uint = <span class="number">0x1008FF31</span>;
+<span class="kw">pub const </span>XF86XK_AudioMedia: c_uint = <span class="number">0x1008FF32</span>;
+<span class="kw">pub const </span>XF86XK_MyComputer: c_uint = <span class="number">0x1008FF33</span>;
+<span class="kw">pub const </span>XF86XK_VendorHome: c_uint = <span class="number">0x1008FF34</span>;
+<span class="kw">pub const </span>XF86XK_LightBulb: c_uint = <span class="number">0x1008FF35</span>;
+<span class="kw">pub const </span>XF86XK_Shop: c_uint = <span class="number">0x1008FF36</span>;
+<span class="kw">pub const </span>XF86XK_History: c_uint = <span class="number">0x1008FF37</span>;
+<span class="kw">pub const </span>XF86XK_OpenURL: c_uint = <span class="number">0x1008FF38</span>;
+<span class="kw">pub const </span>XF86XK_AddFavorite: c_uint = <span class="number">0x1008FF39</span>;
+<span class="kw">pub const </span>XF86XK_HotLinks: c_uint = <span class="number">0x1008FF3A</span>;
+<span class="kw">pub const </span>XF86XK_BrightnessAdjust: c_uint = <span class="number">0x1008FF3B</span>;
+<span class="kw">pub const </span>XF86XK_Finance: c_uint = <span class="number">0x1008FF3C</span>;
+<span class="kw">pub const </span>XF86XK_Community: c_uint = <span class="number">0x1008FF3D</span>;
+<span class="kw">pub const </span>XF86XK_AudioRewind: c_uint = <span class="number">0x1008FF3E</span>;
+<span class="kw">pub const </span>XF86XK_BackForward: c_uint = <span class="number">0x1008FF3F</span>;
+<span class="kw">pub const </span>XF86XK_Launch0: c_uint = <span class="number">0x1008FF40</span>;
+<span class="kw">pub const </span>XF86XK_Launch1: c_uint = <span class="number">0x1008FF41</span>;
+<span class="kw">pub const </span>XF86XK_Launch2: c_uint = <span class="number">0x1008FF42</span>;
+<span class="kw">pub const </span>XF86XK_Launch3: c_uint = <span class="number">0x1008FF43</span>;
+<span class="kw">pub const </span>XF86XK_Launch4: c_uint = <span class="number">0x1008FF44</span>;
+<span class="kw">pub const </span>XF86XK_Launch5: c_uint = <span class="number">0x1008FF45</span>;
+<span class="kw">pub const </span>XF86XK_Launch6: c_uint = <span class="number">0x1008FF46</span>;
+<span class="kw">pub const </span>XF86XK_Launch7: c_uint = <span class="number">0x1008FF47</span>;
+<span class="kw">pub const </span>XF86XK_Launch8: c_uint = <span class="number">0x1008FF48</span>;
+<span class="kw">pub const </span>XF86XK_Launch9: c_uint = <span class="number">0x1008FF49</span>;
+<span class="kw">pub const </span>XF86XK_LaunchA: c_uint = <span class="number">0x1008FF4A</span>;
+<span class="kw">pub const </span>XF86XK_LaunchB: c_uint = <span class="number">0x1008FF4B</span>;
+<span class="kw">pub const </span>XF86XK_LaunchC: c_uint = <span class="number">0x1008FF4C</span>;
+<span class="kw">pub const </span>XF86XK_LaunchD: c_uint = <span class="number">0x1008FF4D</span>;
+<span class="kw">pub const </span>XF86XK_LaunchE: c_uint = <span class="number">0x1008FF4E</span>;
+<span class="kw">pub const </span>XF86XK_LaunchF: c_uint = <span class="number">0x1008FF4F</span>;
+<span class="kw">pub const </span>XF86XK_ApplicationLeft: c_uint = <span class="number">0x1008FF50</span>;
+<span class="kw">pub const </span>XF86XK_ApplicationRight: c_uint = <span class="number">0x1008FF51</span>;
+<span class="kw">pub const </span>XF86XK_Book: c_uint = <span class="number">0x1008FF52</span>;
+<span class="kw">pub const </span>XF86XK_CD: c_uint = <span class="number">0x1008FF53</span>;
+<span class="kw">pub const </span>XF86XK_Calculater: c_uint = <span class="number">0x1008FF54</span>;
+<span class="kw">pub const </span>XF86XK_Clear: c_uint = <span class="number">0x1008FF55</span>;
+<span class="kw">pub const </span>XF86XK_Close: c_uint = <span class="number">0x1008FF56</span>;
+<span class="kw">pub const </span>XF86XK_Copy: c_uint = <span class="number">0x1008FF57</span>;
+<span class="kw">pub const </span>XF86XK_Cut: c_uint = <span class="number">0x1008FF58</span>;
+<span class="kw">pub const </span>XF86XK_Display: c_uint = <span class="number">0x1008FF59</span>;
+<span class="kw">pub const </span>XF86XK_DOS: c_uint = <span class="number">0x1008FF5A</span>;
+<span class="kw">pub const </span>XF86XK_Documents: c_uint = <span class="number">0x1008FF5B</span>;
+<span class="kw">pub const </span>XF86XK_Excel: c_uint = <span class="number">0x1008FF5C</span>;
+<span class="kw">pub const </span>XF86XK_Explorer: c_uint = <span class="number">0x1008FF5D</span>;
+<span class="kw">pub const </span>XF86XK_Game: c_uint = <span class="number">0x1008FF5E</span>;
+<span class="kw">pub const </span>XF86XK_Go: c_uint = <span class="number">0x1008FF5F</span>;
+<span class="kw">pub const </span>XF86XK_iTouch: c_uint = <span class="number">0x1008FF60</span>;
+<span class="kw">pub const </span>XF86XK_LogOff: c_uint = <span class="number">0x1008FF61</span>;
+<span class="kw">pub const </span>XF86XK_Market: c_uint = <span class="number">0x1008FF62</span>;
+<span class="kw">pub const </span>XF86XK_Meeting: c_uint = <span class="number">0x1008FF63</span>;
+<span class="kw">pub const </span>XF86XK_MenuKB: c_uint = <span class="number">0x1008FF65</span>;
+<span class="kw">pub const </span>XF86XK_MenuPB: c_uint = <span class="number">0x1008FF66</span>;
+<span class="kw">pub const </span>XF86XK_MySites: c_uint = <span class="number">0x1008FF67</span>;
+<span class="kw">pub const </span>XF86XK_New: c_uint = <span class="number">0x1008FF68</span>;
+<span class="kw">pub const </span>XF86XK_News: c_uint = <span class="number">0x1008FF69</span>;
+<span class="kw">pub const </span>XF86XK_OfficeHome: c_uint = <span class="number">0x1008FF6A</span>;
+<span class="kw">pub const </span>XF86XK_Open: c_uint = <span class="number">0x1008FF6B</span>;
+<span class="kw">pub const </span>XF86XK_Option: c_uint = <span class="number">0x1008FF6C</span>;
+<span class="kw">pub const </span>XF86XK_Paste: c_uint = <span class="number">0x1008FF6D</span>;
+<span class="kw">pub const </span>XF86XK_Phone: c_uint = <span class="number">0x1008FF6E</span>;
+<span class="kw">pub const </span>XF86XK_Q: c_uint = <span class="number">0x1008FF70</span>;
+<span class="kw">pub const </span>XF86XK_Reply: c_uint = <span class="number">0x1008FF72</span>;
+<span class="kw">pub const </span>XF86XK_Reload: c_uint = <span class="number">0x1008FF73</span>;
+<span class="kw">pub const </span>XF86XK_RotateWindows: c_uint = <span class="number">0x1008FF74</span>;
+<span class="kw">pub const </span>XF86XK_RotationPB: c_uint = <span class="number">0x1008FF75</span>;
+<span class="kw">pub const </span>XF86XK_RotationKB: c_uint = <span class="number">0x1008FF76</span>;
+<span class="kw">pub const </span>XF86XK_Save: c_uint = <span class="number">0x1008FF77</span>;
+<span class="kw">pub const </span>XF86XK_ScrollUp: c_uint = <span class="number">0x1008FF78</span>;
+<span class="kw">pub const </span>XF86XK_ScrollDown: c_uint = <span class="number">0x1008FF79</span>;
+<span class="kw">pub const </span>XF86XK_ScrollClick: c_uint = <span class="number">0x1008FF7A</span>;
+<span class="kw">pub const </span>XF86XK_Send: c_uint = <span class="number">0x1008FF7B</span>;
+<span class="kw">pub const </span>XF86XK_Spell: c_uint = <span class="number">0x1008FF7C</span>;
+<span class="kw">pub const </span>XF86XK_SplitScreen: c_uint = <span class="number">0x1008FF7D</span>;
+<span class="kw">pub const </span>XF86XK_Support: c_uint = <span class="number">0x1008FF7E</span>;
+<span class="kw">pub const </span>XF86XK_TaskPane: c_uint = <span class="number">0x1008FF7F</span>;
+<span class="kw">pub const </span>XF86XK_Terminal: c_uint = <span class="number">0x1008FF80</span>;
+<span class="kw">pub const </span>XF86XK_Tools: c_uint = <span class="number">0x1008FF81</span>;
+<span class="kw">pub const </span>XF86XK_Travel: c_uint = <span class="number">0x1008FF82</span>;
+<span class="kw">pub const </span>XF86XK_UserPB: c_uint = <span class="number">0x1008FF84</span>;
+<span class="kw">pub const </span>XF86XK_User1KB: c_uint = <span class="number">0x1008FF85</span>;
+<span class="kw">pub const </span>XF86XK_User2KB: c_uint = <span class="number">0x1008FF86</span>;
+<span class="kw">pub const </span>XF86XK_Video: c_uint = <span class="number">0x1008FF87</span>;
+<span class="kw">pub const </span>XF86XK_WheelButton: c_uint = <span class="number">0x1008FF88</span>;
+<span class="kw">pub const </span>XF86XK_Word: c_uint = <span class="number">0x1008FF89</span>;
+<span class="kw">pub const </span>XF86XK_Xfer: c_uint = <span class="number">0x1008FF8A</span>;
+<span class="kw">pub const </span>XF86XK_ZoomIn: c_uint = <span class="number">0x1008FF8B</span>;
+<span class="kw">pub const </span>XF86XK_ZoomOut: c_uint = <span class="number">0x1008FF8C</span>;
+<span class="kw">pub const </span>XF86XK_Away: c_uint = <span class="number">0x1008FF8D</span>;
+<span class="kw">pub const </span>XF86XK_Messenger: c_uint = <span class="number">0x1008FF8E</span>;
+<span class="kw">pub const </span>XF86XK_WebCam: c_uint = <span class="number">0x1008FF8F</span>;
+<span class="kw">pub const </span>XF86XK_MailForward: c_uint = <span class="number">0x1008FF90</span>;
+<span class="kw">pub const </span>XF86XK_Pictures: c_uint = <span class="number">0x1008FF91</span>;
+<span class="kw">pub const </span>XF86XK_Music: c_uint = <span class="number">0x1008FF92</span>;
+<span class="kw">pub const </span>XF86XK_Battery: c_uint = <span class="number">0x1008FF93</span>;
+<span class="kw">pub const </span>XF86XK_Bluetooth: c_uint = <span class="number">0x1008FF94</span>;
+<span class="kw">pub const </span>XF86XK_WLAN: c_uint = <span class="number">0x1008FF95</span>;
+<span class="kw">pub const </span>XF86XK_UWB: c_uint = <span class="number">0x1008FF96</span>;
+<span class="kw">pub const </span>XF86XK_AudioForward: c_uint = <span class="number">0x1008FF97</span>;
+<span class="kw">pub const </span>XF86XK_AudioRepeat: c_uint = <span class="number">0x1008FF98</span>;
+<span class="kw">pub const </span>XF86XK_AudioRandomPlay: c_uint = <span class="number">0x1008FF99</span>;
+<span class="kw">pub const </span>XF86XK_Subtitle: c_uint = <span class="number">0x1008FF9A</span>;
+<span class="kw">pub const </span>XF86XK_AudioCycleTrack: c_uint = <span class="number">0x1008FF9B</span>;
+<span class="kw">pub const </span>XF86XK_CycleAngle: c_uint = <span class="number">0x1008FF9C</span>;
+<span class="kw">pub const </span>XF86XK_FrameBack: c_uint = <span class="number">0x1008FF9D</span>;
+<span class="kw">pub const </span>XF86XK_FrameForward: c_uint = <span class="number">0x1008FF9E</span>;
+<span class="kw">pub const </span>XF86XK_Time: c_uint = <span class="number">0x1008FF9F</span>;
+<span class="kw">pub const </span>XF86XK_Select: c_uint = <span class="number">0x1008FFA0</span>;
+<span class="kw">pub const </span>XF86XK_View: c_uint = <span class="number">0x1008FFA1</span>;
+<span class="kw">pub const </span>XF86XK_TopMenu: c_uint = <span class="number">0x1008FFA2</span>;
+<span class="kw">pub const </span>XF86XK_Red: c_uint = <span class="number">0x1008FFA3</span>;
+<span class="kw">pub const </span>XF86XK_Green: c_uint = <span class="number">0x1008FFA4</span>;
+<span class="kw">pub const </span>XF86XK_Yellow: c_uint = <span class="number">0x1008FFA5</span>;
+<span class="kw">pub const </span>XF86XK_Blue: c_uint = <span class="number">0x1008FFA6</span>;
+<span class="kw">pub const </span>XF86XK_Suspend: c_uint = <span class="number">0x1008FFA7</span>;
+<span class="kw">pub const </span>XF86XK_Hibernate: c_uint = <span class="number">0x1008FFA8</span>;
+<span class="kw">pub const </span>XF86XK_TouchpadToggle: c_uint = <span class="number">0x1008FFA9</span>;
+<span class="kw">pub const </span>XF86XK_TouchpadOn: c_uint = <span class="number">0x1008FFB0</span>;
+<span class="kw">pub const </span>XF86XK_TouchpadOff: c_uint = <span class="number">0x1008FFB1</span>;
+<span class="kw">pub const </span>XF86XK_AudioMicMute: c_uint = <span class="number">0x1008FFB2</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_1: c_uint = <span class="number">0x1008FE01</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_2: c_uint = <span class="number">0x1008FE02</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_3: c_uint = <span class="number">0x1008FE03</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_4: c_uint = <span class="number">0x1008FE04</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_5: c_uint = <span class="number">0x1008FE05</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_6: c_uint = <span class="number">0x1008FE06</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_7: c_uint = <span class="number">0x1008FE07</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_8: c_uint = <span class="number">0x1008FE08</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_9: c_uint = <span class="number">0x1008FE09</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_10: c_uint = <span class="number">0x1008FE0A</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_11: c_uint = <span class="number">0x1008FE0B</span>;
+<span class="kw">pub const </span>XF86XK_Switch_VT_12: c_uint = <span class="number">0x1008FE0C</span>;
+<span class="kw">pub const </span>XF86XK_Ungrab: c_uint = <span class="number">0x1008FE20</span>;
+<span class="kw">pub const </span>XF86XK_ClearGrab: c_uint = <span class="number">0x1008FE21</span>;
+<span class="kw">pub const </span>XF86XK_Next_VMode: c_uint = <span class="number">0x1008FE22</span>;
+<span class="kw">pub const </span>XF86XK_Prev_VMode: c_uint = <span class="number">0x1008FE23</span>;
+<span class="kw">pub const </span>XF86XK_LogWindowTree: c_uint = <span class="number">0x1008FE24</span>;
+<span class="kw">pub const </span>XF86XK_LogGrabInfo: c_uint = <span class="number">0x1008FE25</span>;
+
+<span class="kw">pub const </span>XK_ISO_Lock: c_uint = <span class="number">0xfe01</span>;
+<span class="kw">pub const </span>XK_ISO_Level2_Latch: c_uint = <span class="number">0xfe02</span>;
+<span class="kw">pub const </span>XK_ISO_Level3_Shift: c_uint = <span class="number">0xfe03</span>;
+<span class="kw">pub const </span>XK_ISO_Level3_Latch: c_uint = <span class="number">0xfe04</span>;
+<span class="kw">pub const </span>XK_ISO_Level3_Lock: c_uint = <span class="number">0xfe05</span>;
+<span class="kw">pub const </span>XK_ISO_Level5_Shift: c_uint = <span class="number">0xfe11</span>;
+<span class="kw">pub const </span>XK_ISO_Level5_Latch: c_uint = <span class="number">0xfe12</span>;
+<span class="kw">pub const </span>XK_ISO_Level5_Lock: c_uint = <span class="number">0xfe13</span>;
+<span class="kw">pub const </span>XK_ISO_Group_Shift: c_uint = <span class="number">0xff7e</span>;
+<span class="kw">pub const </span>XK_ISO_Group_Latch: c_uint = <span class="number">0xfe06</span>;
+<span class="kw">pub const </span>XK_ISO_Group_Lock: c_uint = <span class="number">0xfe07</span>;
+<span class="kw">pub const </span>XK_ISO_Next_Group: c_uint = <span class="number">0xfe08</span>;
+<span class="kw">pub const </span>XK_ISO_Next_Group_Lock: c_uint = <span class="number">0xfe09</span>;
+<span class="kw">pub const </span>XK_ISO_Prev_Group: c_uint = <span class="number">0xfe0a</span>;
+<span class="kw">pub const </span>XK_ISO_Prev_Group_Lock: c_uint = <span class="number">0xfe0b</span>;
+<span class="kw">pub const </span>XK_ISO_First_Group: c_uint = <span class="number">0xfe0c</span>;
+<span class="kw">pub const </span>XK_ISO_First_Group_Lock: c_uint = <span class="number">0xfe0d</span>;
+<span class="kw">pub const </span>XK_ISO_Last_Group: c_uint = <span class="number">0xfe0e</span>;
+<span class="kw">pub const </span>XK_ISO_Last_Group_Lock: c_uint = <span class="number">0xfe0f</span>;
+
+<span class="kw">pub const </span>XK_ISO_Left_Tab: c_uint = <span class="number">0xfe20</span>;
+<span class="kw">pub const </span>XK_ISO_Move_Line_Up: c_uint = <span class="number">0xfe21</span>;
+<span class="kw">pub const </span>XK_ISO_Move_Line_Down: c_uint = <span class="number">0xfe22</span>;
+<span class="kw">pub const </span>XK_ISO_Partial_Line_Up: c_uint = <span class="number">0xfe23</span>;
+<span class="kw">pub const </span>XK_ISO_Partial_Line_Down: c_uint = <span class="number">0xfe24</span>;
+<span class="kw">pub const </span>XK_ISO_Partial_Space_Left: c_uint = <span class="number">0xfe25</span>;
+<span class="kw">pub const </span>XK_ISO_Partial_Space_Right: c_uint = <span class="number">0xfe26</span>;
+<span class="kw">pub const </span>XK_ISO_Set_Margin_Left: c_uint = <span class="number">0xfe27</span>;
+<span class="kw">pub const </span>XK_ISO_Set_Margin_Right: c_uint = <span class="number">0xfe28</span>;
+<span class="kw">pub const </span>XK_ISO_Release_Margin_Left: c_uint = <span class="number">0xfe29</span>;
+<span class="kw">pub const </span>XK_ISO_Release_Margin_Right: c_uint = <span class="number">0xfe2a</span>;
+<span class="kw">pub const </span>XK_ISO_Release_Both_Margins: c_uint = <span class="number">0xfe2b</span>;
+<span class="kw">pub const </span>XK_ISO_Fast_Cursor_Left: c_uint = <span class="number">0xfe2c</span>;
+<span class="kw">pub const </span>XK_ISO_Fast_Cursor_Right: c_uint = <span class="number">0xfe2d</span>;
+<span class="kw">pub const </span>XK_ISO_Fast_Cursor_Up: c_uint = <span class="number">0xfe2e</span>;
+<span class="kw">pub const </span>XK_ISO_Fast_Cursor_Down: c_uint = <span class="number">0xfe2f</span>;
+<span class="kw">pub const </span>XK_ISO_Continuous_Underline: c_uint = <span class="number">0xfe30</span>;
+<span class="kw">pub const </span>XK_ISO_Discontinuous_Underline: c_uint = <span class="number">0xfe31</span>;
+<span class="kw">pub const </span>XK_ISO_Emphasize: c_uint = <span class="number">0xfe32</span>;
+<span class="kw">pub const </span>XK_ISO_Center_Object: c_uint = <span class="number">0xfe33</span>;
+<span class="kw">pub const </span>XK_ISO_Enter: c_uint = <span class="number">0xfe34</span>;
+
+<span class="kw">pub const </span>XK_dead_grave: c_uint = <span class="number">0xfe50</span>;
+<span class="kw">pub const </span>XK_dead_acute: c_uint = <span class="number">0xfe51</span>;
+<span class="kw">pub const </span>XK_dead_circumflex: c_uint = <span class="number">0xfe52</span>;
+<span class="kw">pub const </span>XK_dead_tilde: c_uint = <span class="number">0xfe53</span>;
+<span class="kw">pub const </span>XK_dead_perispomeni: c_uint = <span class="number">0xfe53</span>;
+<span class="kw">pub const </span>XK_dead_macron: c_uint = <span class="number">0xfe54</span>;
+<span class="kw">pub const </span>XK_dead_breve: c_uint = <span class="number">0xfe55</span>;
+<span class="kw">pub const </span>XK_dead_abovedot: c_uint = <span class="number">0xfe56</span>;
+<span class="kw">pub const </span>XK_dead_diaeresis: c_uint = <span class="number">0xfe57</span>;
+<span class="kw">pub const </span>XK_dead_abovering: c_uint = <span class="number">0xfe58</span>;
+<span class="kw">pub const </span>XK_dead_doubleacute: c_uint = <span class="number">0xfe59</span>;
+<span class="kw">pub const </span>XK_dead_caron: c_uint = <span class="number">0xfe5a</span>;
+<span class="kw">pub const </span>XK_dead_cedilla: c_uint = <span class="number">0xfe5b</span>;
+<span class="kw">pub const </span>XK_dead_ogonek: c_uint = <span class="number">0xfe5c</span>;
+<span class="kw">pub const </span>XK_dead_iota: c_uint = <span class="number">0xfe5d</span>;
+<span class="kw">pub const </span>XK_dead_voiced_sound: c_uint = <span class="number">0xfe5e</span>;
+<span class="kw">pub const </span>XK_dead_semivoiced_sound: c_uint = <span class="number">0xfe5f</span>;
+<span class="kw">pub const </span>XK_dead_belowdot: c_uint = <span class="number">0xfe60</span>;
+<span class="kw">pub const </span>XK_dead_hook: c_uint = <span class="number">0xfe61</span>;
+<span class="kw">pub const </span>XK_dead_horn: c_uint = <span class="number">0xfe62</span>;
+<span class="kw">pub const </span>XK_dead_stroke: c_uint = <span class="number">0xfe63</span>;
+<span class="kw">pub const </span>XK_dead_abovecomma: c_uint = <span class="number">0xfe64</span>;
+<span class="kw">pub const </span>XK_dead_psili: c_uint = <span class="number">0xfe64</span>;
+<span class="kw">pub const </span>XK_dead_abovereversedcomma: c_uint = <span class="number">0xfe65</span>;
+<span class="kw">pub const </span>XK_dead_dasia: c_uint = <span class="number">0xfe65</span>;
+<span class="kw">pub const </span>XK_dead_doublegrave: c_uint = <span class="number">0xfe66</span>;
+<span class="kw">pub const </span>XK_dead_belowring: c_uint = <span class="number">0xfe67</span>;
+<span class="kw">pub const </span>XK_dead_belowmacron: c_uint = <span class="number">0xfe68</span>;
+<span class="kw">pub const </span>XK_dead_belowcircumflex: c_uint = <span class="number">0xfe69</span>;
+<span class="kw">pub const </span>XK_dead_belowtilde: c_uint = <span class="number">0xfe6a</span>;
+<span class="kw">pub const </span>XK_dead_belowbreve: c_uint = <span class="number">0xfe6b</span>;
+<span class="kw">pub const </span>XK_dead_belowdiaeresis: c_uint = <span class="number">0xfe6c</span>;
+<span class="kw">pub const </span>XK_dead_invertedbreve: c_uint = <span class="number">0xfe6d</span>;
+<span class="kw">pub const </span>XK_dead_belowcomma: c_uint = <span class="number">0xfe6e</span>;
+<span class="kw">pub const </span>XK_dead_currency: c_uint = <span class="number">0xfe6f</span>;
+
+<span class="kw">pub const </span>XK_dead_lowline: c_uint = <span class="number">0xfe90</span>;
+<span class="kw">pub const </span>XK_dead_aboveverticalline: c_uint = <span class="number">0xfe91</span>;
+<span class="kw">pub const </span>XK_dead_belowverticalline: c_uint = <span class="number">0xfe92</span>;
+<span class="kw">pub const </span>XK_dead_longsolidusoverlay: c_uint = <span class="number">0xfe93</span>;
+
+<span class="kw">pub const </span>XK_dead_a: c_uint = <span class="number">0xfe80</span>;
+<span class="kw">pub const </span>XK_dead_A: c_uint = <span class="number">0xfe81</span>;
+<span class="kw">pub const </span>XK_dead_e: c_uint = <span class="number">0xfe82</span>;
+<span class="kw">pub const </span>XK_dead_E: c_uint = <span class="number">0xfe83</span>;
+<span class="kw">pub const </span>XK_dead_i: c_uint = <span class="number">0xfe84</span>;
+<span class="kw">pub const </span>XK_dead_I: c_uint = <span class="number">0xfe85</span>;
+<span class="kw">pub const </span>XK_dead_o: c_uint = <span class="number">0xfe86</span>;
+<span class="kw">pub const </span>XK_dead_O: c_uint = <span class="number">0xfe87</span>;
+<span class="kw">pub const </span>XK_dead_u: c_uint = <span class="number">0xfe88</span>;
+<span class="kw">pub const </span>XK_dead_U: c_uint = <span class="number">0xfe89</span>;
+<span class="kw">pub const </span>XK_dead_small_schwa: c_uint = <span class="number">0xfe8a</span>;
+<span class="kw">pub const </span>XK_dead_capital_schwa: c_uint = <span class="number">0xfe8b</span>;
+
+<span class="kw">pub const </span>XK_dead_greek: c_uint = <span class="number">0xfe8c</span>;
+
+<span class="kw">pub const </span>XK_First_Virtual_Screen: c_uint = <span class="number">0xfed0</span>;
+<span class="kw">pub const </span>XK_Prev_Virtual_Screen: c_uint = <span class="number">0xfed1</span>;
+<span class="kw">pub const </span>XK_Next_Virtual_Screen: c_uint = <span class="number">0xfed2</span>;
+<span class="kw">pub const </span>XK_Last_Virtual_Screen: c_uint = <span class="number">0xfed4</span>;
+<span class="kw">pub const </span>XK_Terminate_Server: c_uint = <span class="number">0xfed5</span>;
+
+<span class="kw">pub const </span>XK_AccessX_Enable: c_uint = <span class="number">0xfe70</span>;
+<span class="kw">pub const </span>XK_AccessX_Feedback_Enable: c_uint = <span class="number">0xfe71</span>;
+<span class="kw">pub const </span>XK_RepeatKeys_Enable: c_uint = <span class="number">0xfe72</span>;
+<span class="kw">pub const </span>XK_SlowKeys_Enable: c_uint = <span class="number">0xfe73</span>;
+<span class="kw">pub const </span>XK_BounceKeys_Enable: c_uint = <span class="number">0xfe74</span>;
+<span class="kw">pub const </span>XK_StickyKeys_Enable: c_uint = <span class="number">0xfe75</span>;
+<span class="kw">pub const </span>XK_MouseKeys_Enable: c_uint = <span class="number">0xfe76</span>;
+<span class="kw">pub const </span>XK_MouseKeys_Accel_Enable: c_uint = <span class="number">0xfe77</span>;
+<span class="kw">pub const </span>XK_Overlay1_Enable: c_uint = <span class="number">0xfe78</span>;
+<span class="kw">pub const </span>XK_Overlay2_Enable: c_uint = <span class="number">0xfe79</span>;
+<span class="kw">pub const </span>XK_AudibleBell_Enable: c_uint = <span class="number">0xfe7a</span>;
+
+<span class="kw">pub const </span>XK_Pointer_Left: c_uint = <span class="number">0xfee0</span>;
+<span class="kw">pub const </span>XK_Pointer_Right: c_uint = <span class="number">0xfee1</span>;
+<span class="kw">pub const </span>XK_Pointer_Up: c_uint = <span class="number">0xfee2</span>;
+<span class="kw">pub const </span>XK_Pointer_Down: c_uint = <span class="number">0xfee3</span>;
+<span class="kw">pub const </span>XK_Pointer_UpLeft: c_uint = <span class="number">0xfee4</span>;
+<span class="kw">pub const </span>XK_Pointer_UpRight: c_uint = <span class="number">0xfee5</span>;
+<span class="kw">pub const </span>XK_Pointer_DownLeft: c_uint = <span class="number">0xfee6</span>;
+<span class="kw">pub const </span>XK_Pointer_DownRight: c_uint = <span class="number">0xfee7</span>;
+<span class="kw">pub const </span>XK_Pointer_Button_Dflt: c_uint = <span class="number">0xfee8</span>;
+<span class="kw">pub const </span>XK_Pointer_Button1: c_uint = <span class="number">0xfee9</span>;
+<span class="kw">pub const </span>XK_Pointer_Button2: c_uint = <span class="number">0xfeea</span>;
+<span class="kw">pub const </span>XK_Pointer_Button3: c_uint = <span class="number">0xfeeb</span>;
+<span class="kw">pub const </span>XK_Pointer_Button4: c_uint = <span class="number">0xfeec</span>;
+<span class="kw">pub const </span>XK_Pointer_Button5: c_uint = <span class="number">0xfeed</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick_Dflt: c_uint = <span class="number">0xfeee</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick1: c_uint = <span class="number">0xfeef</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick2: c_uint = <span class="number">0xfef0</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick3: c_uint = <span class="number">0xfef1</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick4: c_uint = <span class="number">0xfef2</span>;
+<span class="kw">pub const </span>XK_Pointer_DblClick5: c_uint = <span class="number">0xfef3</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag_Dflt: c_uint = <span class="number">0xfef4</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag1: c_uint = <span class="number">0xfef5</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag2: c_uint = <span class="number">0xfef6</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag3: c_uint = <span class="number">0xfef7</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag4: c_uint = <span class="number">0xfef8</span>;
+<span class="kw">pub const </span>XK_Pointer_Drag5: c_uint = <span class="number">0xfefd</span>;
+
+<span class="kw">pub const </span>XK_Pointer_EnableKeys: c_uint = <span class="number">0xfef9</span>;
+<span class="kw">pub const </span>XK_Pointer_Accelerate: c_uint = <span class="number">0xfefa</span>;
+<span class="kw">pub const </span>XK_Pointer_DfltBtnNext: c_uint = <span class="number">0xfefb</span>;
+<span class="kw">pub const </span>XK_Pointer_DfltBtnPrev: c_uint = <span class="number">0xfefc</span>;
+
+<span class="kw">pub const </span>XK_ch: c_uint = <span class="number">0xfea0</span>;
+<span class="kw">pub const </span>XK_Ch: c_uint = <span class="number">0xfea1</span>;
+<span class="kw">pub const </span>XK_CH: c_uint = <span class="number">0xfea2</span>;
+<span class="kw">pub const </span>XK_c_h: c_uint = <span class="number">0xfea3</span>;
+<span class="kw">pub const </span>XK_C_h: c_uint = <span class="number">0xfea4</span>;
+<span class="kw">pub const </span>XK_C_H: c_uint = <span class="number">0xfea5</span>;
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="x11_dl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

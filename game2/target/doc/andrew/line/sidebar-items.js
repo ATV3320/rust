@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Line","A drawable object that represents a line"]]};
