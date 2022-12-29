@@ -26,6 +26,17 @@ fn calculateWhen100(user_name: &String, user_age: &i32) {
     //-> io::Result<i32> 
     //current date
    let current_year = Utc::now().year();
-   let hundred_year = 100 - user_age + current_year;
-   println!("Hello {}, you will turn 100 in year {}", user_name, hundred_year);
+   
+
+   if user_age < &100 {
+    let hundred_year = 100 - user_age + current_year;
+    println!("Hello {}, you will turn 100 in year {}", user_name, hundred_year);
+   }
+   else if( user_age < &0 || user_age > &150 ){
+    println!("You possibly can't be that age lol!");
+   }
+   else{
+    let hundred_year = current_year - user_age + 100;
+    println!("Hello {}, you were 100 in year {}", user_name, hundred_year);
+   }
 }
