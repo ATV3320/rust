@@ -1,0 +1,13 @@
+/home/atv/Documents/GitHub/rust/web/backend/target/debug/deps/erased_serde-6694fefbd73126ce.rmeta: /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/lib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/macros.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/any.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/de.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/error.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/features_check/mod.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/map.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/ser.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/private.rs
+
+/home/atv/Documents/GitHub/rust/web/backend/target/debug/deps/erased_serde-6694fefbd73126ce.d: /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/lib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/macros.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/any.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/de.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/error.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/features_check/mod.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/map.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/ser.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/private.rs
+
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/lib.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/macros.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/any.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/de.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/error.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/features_check/mod.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/map.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/ser.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/erased-serde-0.3.24/src/private.rs:
