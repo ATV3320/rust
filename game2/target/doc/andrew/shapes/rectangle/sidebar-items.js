@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Rectangle","A drawable object that represents a rectangle"],["Sides","The Sides bitflag presents the sides of a rectangle"]]};

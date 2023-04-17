@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A fast, low-level IO library for Rust focusing on non-blocking APIs, event notification, and other useful utilities for building high performance IO apps."><meta name="keywords" content="rust, rustlang, rust-lang, mio"><title>mio - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../normalize.css"><link rel="stylesheet" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../ayu.css" disabled><link rel="stylesheet" href="../dark.css" disabled><link rel="stylesheet" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script defer src="../crates.js"></script><script defer src="../main.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../mio/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div></a><h2></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../mio/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div></a><h2 class="location"><a href="#">Crate mio</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.6.23</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn">Crate <a class="mod" href="#">mio</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/mio/lib.rs.html#1-311">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A fast, low-level IO library for Rust focusing on non-blocking APIs, event
+notification, and other useful utilities for building high performance IO
+apps.</p>
+<h2 id="features"><a href="#features">Features</a></h2>
+<ul>
+<li>Non-blocking TCP, UDP</li>
+<li>I/O event notification queue backed by epoll, kqueue, and IOCP</li>
+<li>Zero allocations at runtime</li>
+<li>Platform specific extensions</li>
+</ul>
+<h2 id="non-goals"><a href="#non-goals">Non-goals</a></h2>
+<p>The following are specifically omitted from Mio and are left to the user or higher-level libraries.</p>
+<ul>
+<li>File operations</li>
+<li>Thread pools / multi-threaded event loop</li>
+<li>Timers</li>
+</ul>
+<h2 id="platforms"><a href="#platforms">Platforms</a></h2>
+<p>Currently supported platforms:</p>
+<ul>
+<li>Linux</li>
+<li>OS X</li>
+<li>Windows</li>
+<li>FreeBSD</li>
+<li>NetBSD</li>
+<li>Android</li>
+<li>iOS</li>
+</ul>
+<p>mio can handle interfacing with each of the event notification systems of the aforementioned platforms. The details of
+their implementation are further discussed in <a href="struct.Poll.html"><code>Poll</code></a>.</p>
+<h2 id="usage"><a href="#usage">Usage</a></h2>
+<p>Using mio starts by creating a <a href="struct.Poll.html"><code>Poll</code></a>, which reads events from the OS and
+put them into <a href="struct.Events.html"><code>Events</code></a>. You can handle IO events from the OS with it.</p>
+<p>For more detail, see <a href="struct.Poll.html"><code>Poll</code></a>.</p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>mio::<span class="kw-2">*</span>;
+<span class="kw">use </span>mio::net::{TcpListener, TcpStream};
+
+<span class="comment">// Setup some tokens to allow us to identify which event is
+// for which socket.
+</span><span class="kw">const </span>SERVER: Token = Token(<span class="number">0</span>);
+<span class="kw">const </span>CLIENT: Token = Token(<span class="number">1</span>);
+
+<span class="kw">let </span>addr = <span class="string">&quot;127.0.0.1:13265&quot;</span>.parse().unwrap();
+
+<span class="comment">// Setup the server socket
+</span><span class="kw">let </span>server = TcpListener::bind(<span class="kw-2">&amp;</span>addr).unwrap();
+
+<span class="comment">// Create a poll instance
+</span><span class="kw">let </span>poll = Poll::new().unwrap();
+
+<span class="comment">// Start listening for incoming connections
+</span>poll.register(<span class="kw-2">&amp;</span>server, SERVER, Ready::readable(),
+              PollOpt::edge()).unwrap();
+
+<span class="comment">// Setup the client socket
+</span><span class="kw">let </span>sock = TcpStream::connect(<span class="kw-2">&amp;</span>addr).unwrap();
+
+<span class="comment">// Register the socket
+</span>poll.register(<span class="kw-2">&amp;</span>sock, CLIENT, Ready::readable(),
+              PollOpt::edge()).unwrap();
+
+<span class="comment">// Create storage for events
+</span><span class="kw">let </span><span class="kw-2">mut </span>events = Events::with_capacity(<span class="number">1024</span>);
+
+<span class="kw">loop </span>{
+    poll.poll(<span class="kw-2">&amp;mut </span>events, <span class="prelude-val">None</span>).unwrap();
+
+    <span class="kw">for </span>event <span class="kw">in </span>events.iter() {
+        <span class="kw">match </span>event.token() {
+            SERVER =&gt; {
+                <span class="comment">// Accept and drop the socket immediately, this will close
+                // the socket and notify the client of the EOF.
+                </span><span class="kw">let _ </span>= server.accept();
+            }
+            CLIENT =&gt; {
+                <span class="comment">// The server just shuts down the socket, let&#39;s just exit
+                // from our event loop.
+                </span><span class="kw">return</span>;
+            }
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
+        }
+    }
+}
+</code></pre></div>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="event/index.html" title="mio::event mod">event</a></div><div class="item-right docblock-short">Readiness event types and utilities.</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="net/index.html" title="mio::net mod">net</a></div><div class="item-right docblock-short">Networking primitives</div></div><div class="item-row"><div class="item-left module-item"><a class="mod" href="unix/index.html" title="mio::unix mod">unix</a></div><div class="item-right docblock-short">Unix only extensions</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Events.html" title="mio::Events struct">Events</a></div><div class="item-right docblock-short">A collection of readiness events.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Poll.html" title="mio::Poll struct">Poll</a></div><div class="item-right docblock-short">Polls for readiness events on all registered values.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.PollOpt.html" title="mio::PollOpt struct">PollOpt</a></div><div class="item-right docblock-short">Options supplied when registering an <code>Evented</code> handle with <code>Poll</code></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Ready.html" title="mio::Ready struct">Ready</a></div><div class="item-right docblock-short">A set of readiness event kinds</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Registration.html" title="mio::Registration struct">Registration</a></div><div class="item-right docblock-short">Handle to a user space <code>Poll</code> registration.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SetReadiness.html" title="mio::SetReadiness struct">SetReadiness</a></div><div class="item-right docblock-short">Updates the readiness state of the associated <code>Registration</code>.</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Token.html" title="mio::Token struct">Token</a></div><div class="item-right docblock-short">Associates readiness notifications with <a href="event/trait.Evented.html"><code>Evented</code></a> handles.</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="mio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

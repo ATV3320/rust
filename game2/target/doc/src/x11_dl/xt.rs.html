@@ -1,0 +1,774 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/x11-dl-2.20.1/src/xt.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>xt.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../x11_dl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+</pre><pre class="rust"><code><span class="comment">// x11-rs: Rust bindings for X11 libraries
+// The X11 libraries are available under the MIT license.
+// These bindings are public domain.
+
+</span><span class="kw">use </span>std::os::raw::{c_char, c_int, c_long, c_short, c_uchar, c_uint, c_ulong, c_ushort, c_void};
+
+<span class="kw">use </span><span class="kw">super</span>::xlib::{
+    Display, Region, Screen, Visual, XEvent, XGCValues, XSelectionRequestEvent,
+    XSetWindowAttributes, XrmOptionDescList, XrmValue, _XrmHashBucketRec, GC,
+};
+
+<span class="comment">//
+// functions
+//
+
+</span><span class="macro">x11_link! </span>{ Xt, xt, [<span class="string">&quot;libXt.so.6&quot;</span>, <span class="string">&quot;libXt.so&quot;</span>], <span class="number">300</span>,
+  <span class="kw">pub fn </span>XtAddActions (_2: <span class="kw-2">*mut </span>XtActionsRec, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAddCallback (_4: Widget, _3: <span class="kw-2">*const </span>c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_void)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtAddCallbacks (_3: Widget, _2: <span class="kw-2">*const </span>c_char, _1: XtCallbackList) -&gt; (),
+  <span class="kw">pub fn </span>XtAddConverter (_5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue)&gt;, _2: XtConvertArgList, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAddEventHandler (_5: Widget, _4: c_ulong, _3: c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtAddExposureToRegion (_2: <span class="kw-2">*mut </span>XEvent, _1: Region) -&gt; (),
+  <span class="kw">pub fn </span>XtAddGrab (_3: Widget, _2: c_char, _1: c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtAddInput (_4: c_int, _3: <span class="kw-2">*mut </span>c_void, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_int, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAddRawEventHandler (_5: Widget, _4: c_ulong, _3: c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtAddSignal (_2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAddTimeOut (_3: c_ulong, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAddWorkProc (_2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void) -&gt; c_char&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAllocateGC (_6: Widget, _5: c_uint, _4: c_ulong, _3: <span class="kw-2">*mut </span>XGCValues, _2: c_ulong, _1: c_ulong) -&gt; GC,
+  <span class="kw">pub fn </span>XtAppAddActionHook (_3: XtAppContext, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; <span class="kw-2">*mut </span>c_void,
+  <span class="kw">pub fn </span>XtAppAddActions (_3: XtAppContext, _2: <span class="kw-2">*mut </span>XtActionsRec, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAppAddBlockHook (_3: XtAppContext, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppAddConverter (_6: XtAppContext, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue)&gt;, _2: XtConvertArgList, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAppAddInput (_5: XtAppContext, _4: c_int, _3: <span class="kw-2">*mut </span>c_void, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_int, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppAddSignal (_3: XtAppContext, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppAddTimeOut (_4: XtAppContext, _3: c_ulong, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppAddWorkProc (_3: XtAppContext, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_void) -&gt; c_char&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppCreateShell (_6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: WidgetClass, _3: <span class="kw-2">*mut </span>Display, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtAppError (_2: XtAppContext, _1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtAppErrorMsg (_7: XtAppContext, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAppGetErrorDatabase (_1: XtAppContext) -&gt; <span class="kw-2">*mut *mut </span>_XrmHashBucketRec,
+  <span class="kw">pub fn </span>XtAppGetErrorDatabaseText (_8: XtAppContext, _7: <span class="kw-2">*const </span>c_char, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*mut </span>c_char, _2: c_int, _1: <span class="kw-2">*mut </span>_XrmHashBucketRec) -&gt; (),
+  <span class="kw">pub fn </span>XtAppGetExitFlag (_1: XtAppContext) -&gt; c_char,
+  <span class="kw">pub fn </span>XtAppGetSelectionTimeout (_1: XtAppContext) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppInitialize (_9: <span class="kw-2">*mut </span>XtAppContext, _8: <span class="kw-2">*const </span>c_char, _7: XrmOptionDescList, _6: c_uint, _5: <span class="kw-2">*mut </span>c_int, _4: <span class="kw-2">*mut *mut </span>c_char, _3: <span class="kw-2">*mut *mut </span>c_char, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtAppLock (_1: XtAppContext) -&gt; (),
+  <span class="kw">pub fn </span>XtAppMainLoop (_1: XtAppContext) -&gt; (),
+  <span class="kw">pub fn </span>XtAppNextEvent (_2: XtAppContext, _1: <span class="kw-2">*mut </span>XEvent) -&gt; (),
+  <span class="kw">pub fn </span>XtAppPeekEvent (_2: XtAppContext, _1: <span class="kw-2">*mut </span>XEvent) -&gt; c_char,
+  <span class="kw">pub fn </span>XtAppPending (_1: XtAppContext) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtAppProcessEvent (_2: XtAppContext, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtAppReleaseCacheRefs (_2: XtAppContext, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtAppSetErrorHandler (_2: XtAppContext, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;,
+  <span class="kw">pub fn </span>XtAppSetErrorMsgHandler (_2: XtAppContext, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;,
+  <span class="kw">pub fn </span>XtAppSetExitFlag (_1: XtAppContext) -&gt; (),
+  <span class="kw">pub fn </span>XtAppSetFallbackResources (_2: XtAppContext, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtAppSetSelectionTimeout (_2: XtAppContext, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtAppSetTypeConverter (_8: XtAppContext, _7: <span class="kw-2">*const </span>c_char, _6: <span class="kw-2">*const </span>c_char, _5: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char&gt;, _4: XtConvertArgList, _3: c_uint, _2: c_int, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(XtAppContext, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtAppSetWarningHandler (_2: XtAppContext, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;,
+  <span class="kw">pub fn </span>XtAppSetWarningMsgHandler (_2: XtAppContext, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;,
+  <span class="kw">pub fn </span>XtAppUnlock (_1: XtAppContext) -&gt; (),
+  <span class="kw">pub fn </span>XtAppWarning (_2: XtAppContext, _1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtAppWarningMsg (_7: XtAppContext, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtAugmentTranslations (_2: Widget, _1: <span class="kw-2">*mut </span>_TranslationData) -&gt; (),
+  <span class="kw">pub fn </span>XtBuildEventMask (_1: Widget) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtCallAcceptFocus (_2: Widget, _1: <span class="kw-2">*mut </span>c_ulong) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCallActionProc (_5: Widget, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*mut </span>XEvent, _2: <span class="kw-2">*mut *mut </span>c_char, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackExclusive (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackNone (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackNonexclusive (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackPopdown (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackReleaseCacheRef (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallbackReleaseCacheRefList (_3: Widget, _2: <span class="kw-2">*mut </span>c_void, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallCallbackList (_3: Widget, _2: XtCallbackList, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallCallbacks (_3: Widget, _2: <span class="kw-2">*const </span>c_char, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtCallConverter (_7: <span class="kw-2">*mut </span>Display, _6: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char&gt;, _5: <span class="kw-2">*mut </span>XrmValue, _4: c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCalloc (_2: c_uint, _1: c_uint) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtCancelSelectionRequest (_2: Widget, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtChangeManagedSet (_6: <span class="kw-2">*mut </span>Widget, _5: c_uint, _4: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>Widget, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>Widget, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>c_void)&gt;, _3: <span class="kw-2">*mut </span>c_void, _2: <span class="kw-2">*mut </span>Widget, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtClass (_1: Widget) -&gt; WidgetClass,
+  <span class="kw">pub fn </span>XtCloseDisplay (_1: <span class="kw-2">*mut </span>Display) -&gt; (),
+  <span class="kw">pub fn </span>XtConfigureWidget (_6: Widget, _5: c_short, _4: c_short, _3: c_ushort, _2: c_ushort, _1: c_ushort) -&gt; (),
+  <span class="kw">pub fn </span>XtConvert (_5: Widget, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*const </span>c_char, _1: <span class="kw-2">*mut </span>XrmValue) -&gt; (),
+  <span class="kw">pub fn </span>XtConvertAndStore (_5: Widget, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*const </span>c_char, _1: <span class="kw-2">*mut </span>XrmValue) -&gt; c_char,
+  <span class="kw">pub fn </span>XtConvertCase (_4: <span class="kw-2">*mut </span>Display, _3: c_ulong, _2: <span class="kw-2">*mut </span>c_ulong, _1: <span class="kw-2">*mut </span>c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtCreateApplicationContext () -&gt; XtAppContext,
+  <span class="kw">pub fn </span>XtCreateApplicationShell (_4: <span class="kw-2">*const </span>c_char, _3: WidgetClass, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtCreateManagedWidget (_5: <span class="kw-2">*const </span>c_char, _4: WidgetClass, _3: Widget, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtCreatePopupShell (_5: <span class="kw-2">*const </span>c_char, _4: WidgetClass, _3: Widget, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtCreateSelectionRequest (_2: Widget, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtCreateWidget (_5: <span class="kw-2">*const </span>c_char, _4: WidgetClass, _3: Widget, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtCreateWindow (_5: Widget, _4: c_uint, _3: <span class="kw-2">*mut </span>Visual, _2: c_ulong, _1: <span class="kw-2">*mut </span>XSetWindowAttributes) -&gt; (),
+  <span class="kw">pub fn </span>XtCvtColorToPixel (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToBool (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToBoolean (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToColor (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToFloat (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToFont (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToPixel (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToPixmap (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToShort (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtIntToUnsignedChar (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToAcceleratorTable (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToAtom (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToBool (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToBoolean (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToCommandArgArray (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToCursor (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToDimension (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToDirectoryString (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToDisplay (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToFile (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToFloat (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToFont (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToFontSet (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToFontStruct (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToGravity (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToInitialState (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToInt (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToPixel (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToRestartStyle (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToShort (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToTranslationTable (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToUnsignedChar (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtCvtStringToVisual (_6: <span class="kw-2">*mut </span>Display, _5: <span class="kw-2">*mut </span>XrmValue, _4: <span class="kw-2">*mut </span>c_uint, _3: <span class="kw-2">*mut </span>XrmValue, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtDatabase (_1: <span class="kw-2">*mut </span>Display) -&gt; <span class="kw-2">*mut </span>_XrmHashBucketRec,
+  <span class="kw">pub fn </span>XtDestroyApplicationContext (_1: XtAppContext) -&gt; (),
+  <span class="kw">pub fn </span>XtDestroyGC (_1: GC) -&gt; (),
+  <span class="kw">pub fn </span>XtDestroyWidget (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtDirectConvert (_5: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue)&gt;, _4: <span class="kw-2">*mut </span>XrmValue, _3: c_uint, _2: <span class="kw-2">*mut </span>XrmValue, _1: <span class="kw-2">*mut </span>XrmValue) -&gt; (),
+  <span class="kw">pub fn </span>XtDisownSelection (_3: Widget, _2: c_ulong, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtDispatchEvent (_1: <span class="kw-2">*mut </span>XEvent) -&gt; c_char,
+  <span class="kw">pub fn </span>XtDispatchEventToWidget (_2: Widget, _1: <span class="kw-2">*mut </span>XEvent) -&gt; c_char,
+  <span class="kw">pub fn </span>XtDisplay (_1: Widget) -&gt; <span class="kw-2">*mut </span>Display,
+  <span class="kw">pub fn </span>XtDisplayInitialize (_8: XtAppContext, _7: <span class="kw-2">*mut </span>Display, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: XrmOptionDescList, _3: c_uint, _2: <span class="kw-2">*mut </span>c_int, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtDisplayOfObject (_1: Widget) -&gt; <span class="kw-2">*mut </span>Display,
+  <span class="kw">pub fn </span>XtDisplayStringConversionWarning (_3: <span class="kw-2">*mut </span>Display, _2: <span class="kw-2">*const </span>c_char, _1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtDisplayToApplicationContext (_1: <span class="kw-2">*mut </span>Display) -&gt; XtAppContext,
+  <span class="kw">pub fn </span>XtError (_1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtErrorMsg (_6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtFindFile (_4: <span class="kw-2">*const </span>c_char, _3: Substitution, _2: c_uint, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char) -&gt; c_char&gt;) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtFree (_1: <span class="kw-2">*mut </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtGetActionKeysym (_2: <span class="kw-2">*mut </span>XEvent, _1: <span class="kw-2">*mut </span>c_uint) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtGetActionList (_3: WidgetClass, _2: <span class="kw-2">*mut *mut </span>XtActionsRec, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetApplicationNameAndClass (_3: <span class="kw-2">*mut </span>Display, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtGetApplicationResources (_6: Widget, _5: <span class="kw-2">*mut </span>c_void, _4: <span class="kw-2">*mut </span>XtResource, _3: c_uint, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetClassExtension (_5: WidgetClass, _4: c_uint, _3: c_int, _2: c_long, _1: c_uint) -&gt; <span class="kw-2">*mut </span>c_void,
+  <span class="kw">pub fn </span>XtGetConstraintResourceList (_3: WidgetClass, _2: <span class="kw-2">*mut *mut </span>XtResource, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetDisplays (_3: XtAppContext, _2: <span class="kw-2">*mut *mut *mut </span>Display, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetErrorDatabase () -&gt; <span class="kw-2">*mut *mut </span>_XrmHashBucketRec,
+  <span class="kw">pub fn </span>XtGetErrorDatabaseText (_6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut </span>c_char, _1: c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtGetGC (_3: Widget, _2: c_ulong, _1: <span class="kw-2">*mut </span>XGCValues) -&gt; GC,
+  <span class="kw">pub fn </span>XtGetKeyboardFocusWidget (_1: Widget) -&gt; Widget,
+  <span class="kw">pub fn </span>XtGetKeysymTable (_3: <span class="kw-2">*mut </span>Display, _2: <span class="kw-2">*mut </span>c_uchar, _1: <span class="kw-2">*mut </span>c_int) -&gt; <span class="kw-2">*mut </span>c_ulong,
+  <span class="kw">pub fn </span>XtGetMultiClickTime (_1: <span class="kw-2">*mut </span>Display) -&gt; c_int,
+  <span class="kw">pub fn </span>XtGetResourceList (_3: WidgetClass, _2: <span class="kw-2">*mut *mut </span>XtResource, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSelectionParameters (_7: Widget, _6: c_ulong, _5: <span class="kw-2">*mut </span>c_void, _4: <span class="kw-2">*mut </span>c_ulong, _3: <span class="kw-2">*mut *mut </span>c_void, _2: <span class="kw-2">*mut </span>c_ulong, _1: <span class="kw-2">*mut </span>c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSelectionRequest (_3: Widget, _2: c_ulong, _1: <span class="kw-2">*mut </span>c_void) -&gt; <span class="kw-2">*mut </span>XSelectionRequestEvent,
+  <span class="kw">pub fn </span>XtGetSelectionTimeout () -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtGetSelectionValue (_6: Widget, _5: c_ulong, _4: c_ulong, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int)&gt;, _2: <span class="kw-2">*mut </span>c_void, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSelectionValueIncremental (_6: Widget, _5: c_ulong, _4: c_ulong, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int)&gt;, _2: <span class="kw-2">*mut </span>c_void, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSelectionValues (_7: Widget, _6: c_ulong, _5: <span class="kw-2">*mut </span>c_ulong, _4: c_int, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int)&gt;, _2: <span class="kw-2">*mut *mut </span>c_void, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSelectionValuesIncremental (_7: Widget, _6: c_ulong, _5: <span class="kw-2">*mut </span>c_ulong, _4: c_int, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int)&gt;, _2: <span class="kw-2">*mut *mut </span>c_void, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSubresources (_8: Widget, _7: <span class="kw-2">*mut </span>c_void, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*mut </span>XtResource, _3: c_uint, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetSubvalues (_5: <span class="kw-2">*mut </span>c_void, _4: <span class="kw-2">*mut </span>XtResource, _3: c_uint, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGetValues (_3: Widget, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtGrabButton (_9: Widget, _8: c_int, _7: c_uint, _6: c_char, _5: c_uint, _4: c_int, _3: c_int, _2: c_ulong, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtGrabKey (_6: Widget, _5: c_uchar, _4: c_uint, _3: c_char, _2: c_int, _1: c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtGrabKeyboard (_5: Widget, _4: c_char, _3: c_int, _2: c_int, _1: c_ulong) -&gt; c_int,
+  <span class="kw">pub fn </span>XtGrabPointer (_8: Widget, _7: c_char, _6: c_uint, _5: c_int, _4: c_int, _3: c_ulong, _2: c_ulong, _1: c_ulong) -&gt; c_int,
+  <span class="kw">pub fn </span>XtHasCallbacks (_2: Widget, _1: <span class="kw-2">*const </span>c_char) -&gt; XtCallbackStatus,
+  <span class="kw">pub fn </span>XtHooksOfDisplay (_1: <span class="kw-2">*mut </span>Display) -&gt; Widget,
+  <span class="kw">pub fn </span>XtInitialize (_6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: XrmOptionDescList, _3: c_uint, _2: <span class="kw-2">*mut </span>c_int, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; Widget,
+  <span class="kw">pub fn </span>XtInitializeWidgetClass (_1: WidgetClass) -&gt; (),
+  <span class="kw">pub fn </span>XtInsertEventHandler (_6: Widget, _5: c_ulong, _4: c_char, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _2: <span class="kw-2">*mut </span>c_void, _1: XtListPosition) -&gt; (),
+  <span class="kw">pub fn </span>XtInsertEventTypeHandler (_6: Widget, _5: c_int, _4: <span class="kw-2">*mut </span>c_void, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _2: <span class="kw-2">*mut </span>c_void, _1: XtListPosition) -&gt; (),
+  <span class="kw">pub fn </span>XtInsertRawEventHandler (_6: Widget, _5: c_ulong, _4: c_char, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _2: <span class="kw-2">*mut </span>c_void, _1: XtListPosition) -&gt; (),
+  <span class="kw">pub fn </span>XtInstallAccelerators (_2: Widget, _1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtInstallAllAccelerators (_2: Widget, _1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtIsApplicationShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsComposite (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsConstraint (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsManaged (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsObject (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsOverrideShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsRealized (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsRectObj (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsSensitive (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsSessionShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsSubclass (_2: Widget, _1: WidgetClass) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsTopLevelShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsTransientShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsVendorShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsWidget (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtIsWMShell (_1: Widget) -&gt; c_char,
+  <span class="kw">pub fn </span>XtKeysymToKeycodeList (_4: <span class="kw-2">*mut </span>Display, _3: c_ulong, _2: <span class="kw-2">*mut *mut </span>c_uchar, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtLastEventProcessed (_1: <span class="kw-2">*mut </span>Display) -&gt; <span class="kw-2">*mut </span>XEvent,
+  <span class="kw">pub fn </span>XtLastTimestampProcessed (_1: <span class="kw-2">*mut </span>Display) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtMainLoop () -&gt; (),
+  <span class="kw">pub fn </span>XtMakeGeometryRequest (_3: Widget, _2: <span class="kw-2">*mut </span>XtWidgetGeometry, _1: <span class="kw-2">*mut </span>XtWidgetGeometry) -&gt; XtGeometryResult,
+  <span class="kw">pub fn </span>XtMakeResizeRequest (_5: Widget, _4: c_ushort, _3: c_ushort, _2: <span class="kw-2">*mut </span>c_ushort, _1: <span class="kw-2">*mut </span>c_ushort) -&gt; XtGeometryResult,
+  <span class="kw">pub fn </span>XtMalloc (_1: c_uint) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtManageChild (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtManageChildren (_2: <span class="kw-2">*mut </span>Widget, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtMapWidget (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtMenuPopupAction (_4: Widget, _3: <span class="kw-2">*mut </span>XEvent, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtMergeArgLists (_4: <span class="kw-2">*mut </span>Arg, _3: c_uint, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; <span class="kw-2">*mut </span>Arg,
+  <span class="kw">pub fn </span>XtMoveWidget (_3: Widget, _2: c_short, _1: c_short) -&gt; (),
+  <span class="kw">pub fn </span>XtName (_1: Widget) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtNameToWidget (_2: Widget, _1: <span class="kw-2">*const </span>c_char) -&gt; Widget,
+  <span class="kw">pub fn </span>XtNewString (_1: <span class="kw-2">*mut </span>c_char) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtNextEvent (_1: <span class="kw-2">*mut </span>XEvent) -&gt; (),
+  <span class="kw">pub fn </span>XtNoticeSignal (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtOpenApplication (_10: <span class="kw-2">*mut </span>XtAppContext, _9: <span class="kw-2">*const </span>c_char, _8: XrmOptionDescList, _7: c_uint, _6: <span class="kw-2">*mut </span>c_int, _5: <span class="kw-2">*mut *mut </span>c_char, _4: <span class="kw-2">*mut *mut </span>c_char, _3: WidgetClass, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; Widget,
+  <span class="kw">pub fn </span>XtOpenDisplay (_8: XtAppContext, _7: <span class="kw-2">*const </span>c_char, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: XrmOptionDescList, _3: c_uint, _2: <span class="kw-2">*mut </span>c_int, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; <span class="kw-2">*mut </span>Display,
+  <span class="kw">pub fn </span>XtOverrideTranslations (_2: Widget, _1: <span class="kw-2">*mut </span>_TranslationData) -&gt; (),
+  <span class="kw">pub fn </span>XtOwnSelection (_6: Widget, _5: c_ulong, _4: c_ulong, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut *mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int) -&gt; c_char&gt;, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong)&gt;, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong)&gt;) -&gt; c_char,
+  <span class="kw">pub fn </span>XtOwnSelectionIncremental (_8: Widget, _7: c_ulong, _6: c_ulong, _5: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut *mut </span>c_void, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_int, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char&gt;, _4: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_void)&gt;, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut *mut </span>c_void, <span class="kw-2">*mut </span>c_void)&gt;, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut *mut </span>c_void, <span class="kw-2">*mut </span>c_void)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; c_char,
+  <span class="kw">pub fn </span>XtParent (_1: Widget) -&gt; Widget,
+  <span class="kw">pub fn </span>XtParseAcceleratorTable (_1: <span class="kw-2">*const </span>c_char) -&gt; <span class="kw-2">*mut </span>_TranslationData,
+  <span class="kw">pub fn </span>XtParseTranslationTable (_1: <span class="kw-2">*const </span>c_char) -&gt; <span class="kw-2">*mut </span>_TranslationData,
+  <span class="kw">pub fn </span>XtPeekEvent (_1: <span class="kw-2">*mut </span>XEvent) -&gt; c_char,
+  <span class="kw">pub fn </span>XtPending () -&gt; c_char,
+  <span class="kw">pub fn </span>XtPopdown (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtPopup (_2: Widget, _1: XtGrabKind) -&gt; (),
+  <span class="kw">pub fn </span>XtPopupSpringLoaded (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtProcessEvent (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtProcessLock () -&gt; (),
+  <span class="kw">pub fn </span>XtProcessUnlock () -&gt; (),
+  <span class="kw">pub fn </span>XtQueryGeometry (_3: Widget, _2: <span class="kw-2">*mut </span>XtWidgetGeometry, _1: <span class="kw-2">*mut </span>XtWidgetGeometry) -&gt; XtGeometryResult,
+  <span class="kw">pub fn </span>XtRealizeWidget (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtRealloc (_2: <span class="kw-2">*mut </span>c_char, _1: c_uint) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtRegisterCaseConverter (_4: <span class="kw-2">*mut </span>Display, _3: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, c_ulong, <span class="kw-2">*mut </span>c_ulong, <span class="kw-2">*mut </span>c_ulong)&gt;, _2: c_ulong, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRegisterDrawable (_3: <span class="kw-2">*mut </span>Display, _2: c_ulong, _1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtRegisterExtensionSelector (_5: <span class="kw-2">*mut </span>Display, _4: c_int, _3: c_int, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_int, <span class="kw-2">*mut *mut </span>c_void, c_int, <span class="kw-2">*mut </span>c_void)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRegisterGrabAction (_5: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;, _4: c_char, _3: c_uint, _2: c_int, _1: c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtReleaseGC (_2: Widget, _1: GC) -&gt; (),
+  <span class="kw">pub fn </span>XtReleasePropertyAtom (_2: Widget, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveActionHook (_1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveAllCallbacks (_2: Widget, _1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveBlockHook (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveCallback (_4: Widget, _3: <span class="kw-2">*const </span>c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>c_void)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveCallbacks (_3: Widget, _2: <span class="kw-2">*const </span>c_char, _1: XtCallbackList) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveEventHandler (_5: Widget, _4: c_ulong, _3: c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveEventTypeHandler (_5: Widget, _4: c_int, _3: <span class="kw-2">*mut </span>c_void, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveGrab (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveInput (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveRawEventHandler (_5: Widget, _4: c_ulong, _3: c_char, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(Widget, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XEvent, <span class="kw-2">*mut </span>c_char)&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveSignal (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveTimeOut (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtRemoveWorkProc (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtReservePropertyAtom (_1: Widget) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtResizeWidget (_4: Widget, _3: c_ushort, _2: c_ushort, _1: c_ushort) -&gt; (),
+  <span class="kw">pub fn </span>XtResizeWindow (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtResolvePathname (_8: <span class="kw-2">*mut </span>Display, _7: <span class="kw-2">*const </span>c_char, _6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: Substitution, _2: c_uint, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char) -&gt; c_char&gt;) -&gt; <span class="kw-2">*mut </span>c_char,
+  <span class="kw">pub fn </span>XtScreen (_1: Widget) -&gt; <span class="kw-2">*mut </span>Screen,
+  <span class="kw">pub fn </span>XtScreenDatabase (_1: <span class="kw-2">*mut </span>Screen) -&gt; <span class="kw-2">*mut </span>_XrmHashBucketRec,
+  <span class="kw">pub fn </span>XtScreenOfObject (_1: Widget) -&gt; <span class="kw-2">*mut </span>Screen,
+  <span class="kw">pub fn </span>XtSendSelectionRequest (_3: Widget, _2: c_ulong, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtSessionGetToken (_1: Widget) -&gt; XtCheckpointToken,
+  <span class="kw">pub fn </span>XtSessionReturnToken (_1: XtCheckpointToken) -&gt; (),
+  <span class="kw">pub fn </span>XtSetErrorHandler (_1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetErrorMsgHandler (_1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetEventDispatcher (_3: <span class="kw-2">*mut </span>Display, _2: c_int, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>XEvent) -&gt; c_char&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>XEvent) -&gt; c_char&gt;,
+  <span class="kw">pub fn </span>XtSetKeyboardFocus (_2: Widget, _1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtSetKeyTranslator (_2: <span class="kw-2">*mut </span>Display, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, c_uchar, c_uint, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>c_ulong)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetLanguageProc (_3: XtAppContext, _2: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_void) -&gt; <span class="kw-2">*mut </span>c_char&gt;, _1: <span class="kw-2">*mut </span>c_void) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_void) -&gt; <span class="kw-2">*mut </span>c_char&gt;,
+  <span class="kw">pub fn </span>XtSetMappedWhenManaged (_2: Widget, _1: c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtSetMultiClickTime (_2: <span class="kw-2">*mut </span>Display, _1: c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtSetSelectionParameters (_6: Widget, _5: c_ulong, _4: c_ulong, _3: <span class="kw-2">*mut </span>c_void, _2: c_ulong, _1: c_int) -&gt; (),
+  <span class="kw">pub fn </span>XtSetSelectionTimeout (_1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtSetSensitive (_2: Widget, _1: c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtSetSubvalues (_5: <span class="kw-2">*mut </span>c_void, _4: <span class="kw-2">*mut </span>XtResource, _3: c_uint, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtSetTypeConverter (_7: <span class="kw-2">*const </span>c_char, _6: <span class="kw-2">*const </span>c_char, _5: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>Display, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut *mut </span>c_void) -&gt; c_char&gt;, _4: XtConvertArgList, _3: c_uint, _2: c_int, _1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(XtAppContext, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_void, <span class="kw-2">*mut </span>XrmValue, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetValues (_3: Widget, _2: <span class="kw-2">*mut </span>Arg, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtSetWarningHandler (_1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetWarningMsgHandler (_1: <span class="prelude-ty">Option</span>&lt;<span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>(<span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut </span>c_char, <span class="kw-2">*mut *mut </span>c_char, <span class="kw-2">*mut </span>c_uint)&gt;) -&gt; (),
+  <span class="kw">pub fn </span>XtSetWMColormapWindows (_3: Widget, _2: <span class="kw-2">*mut </span>Widget, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtStringConversionWarning (_2: <span class="kw-2">*const </span>c_char, _1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtSuperclass (_1: Widget) -&gt; WidgetClass,
+  <span class="kw">pub fn </span>XtToolkitInitialize () -&gt; (),
+  <span class="kw">pub fn </span>XtToolkitThreadInitialize () -&gt; c_char,
+  <span class="kw">pub fn </span>XtTranslateCoords (_5: Widget, _4: c_short, _3: c_short, _2: <span class="kw-2">*mut </span>c_short, _1: <span class="kw-2">*mut </span>c_short) -&gt; (),
+  <span class="kw">pub fn </span>XtTranslateKey (_5: <span class="kw-2">*mut </span>Display, _4: c_uchar, _3: c_uint, _2: <span class="kw-2">*mut </span>c_uint, _1: <span class="kw-2">*mut </span>c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtTranslateKeycode (_5: <span class="kw-2">*mut </span>Display, _4: c_uchar, _3: c_uint, _2: <span class="kw-2">*mut </span>c_uint, _1: <span class="kw-2">*mut </span>c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtUngrabButton (_3: Widget, _2: c_uint, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtUngrabKey (_3: Widget, _2: c_uchar, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtUngrabKeyboard (_2: Widget, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtUngrabPointer (_2: Widget, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtUninstallTranslations (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtUnmanageChild (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtUnmanageChildren (_2: <span class="kw-2">*mut </span>Widget, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtUnmapWidget (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtUnrealizeWidget (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtUnregisterDrawable (_2: <span class="kw-2">*mut </span>Display, _1: c_ulong) -&gt; (),
+  <span class="kw">pub fn </span>XtWarning (_1: <span class="kw-2">*const </span>c_char) -&gt; (),
+  <span class="kw">pub fn </span>XtWarningMsg (_6: <span class="kw-2">*const </span>c_char, _5: <span class="kw-2">*const </span>c_char, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut </span>c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtWidgetToApplicationContext (_1: Widget) -&gt; XtAppContext,
+  <span class="kw">pub fn </span>XtWindow (_1: Widget) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtWindowOfObject (_1: Widget) -&gt; c_ulong,
+  <span class="kw">pub fn </span>XtWindowToWidget (_2: <span class="kw-2">*mut </span>Display, _1: c_ulong) -&gt; Widget,
+variadic:
+  <span class="kw">pub fn </span>XtAsprintf (_2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*const </span>c_char) -&gt; c_uint,
+  <span class="kw">pub fn </span>XtVaAppCreateShell (_4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: WidgetClass, _1: <span class="kw-2">*mut </span>Display) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaAppInitialize (_7: <span class="kw-2">*mut </span>XtAppContext, _6: <span class="kw-2">*const </span>c_char, _5: XrmOptionDescList, _4: c_uint, _3: <span class="kw-2">*mut </span>c_int, _2: <span class="kw-2">*mut *mut </span>c_char, _1: <span class="kw-2">*mut *mut </span>c_char) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaCreateArgsList (_1: <span class="kw-2">*mut </span>c_void) -&gt; <span class="kw-2">*mut </span>c_void,
+  <span class="kw">pub fn </span>XtVaCreateManagedWidget (_3: <span class="kw-2">*const </span>c_char, _2: WidgetClass, _1: Widget) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaCreatePopupShell (_3: <span class="kw-2">*const </span>c_char, _2: WidgetClass, _1: Widget) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaCreateWidget (_3: <span class="kw-2">*const </span>c_char, _2: WidgetClass, _1: Widget) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaGetApplicationResources (_4: Widget, _3: <span class="kw-2">*mut </span>c_void, _2: <span class="kw-2">*mut </span>XtResource, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtVaGetSubresources (_6: Widget, _5: <span class="kw-2">*mut </span>c_void, _4: <span class="kw-2">*const </span>c_char, _3: <span class="kw-2">*const </span>c_char, _2: <span class="kw-2">*mut </span>XtResource, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtVaGetSubvalues (_3: <span class="kw-2">*mut </span>c_void, _2: <span class="kw-2">*mut </span>XtResource, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtVaGetValues (_1: Widget) -&gt; (),
+  <span class="kw">pub fn </span>XtVaOpenApplication (_8: <span class="kw-2">*mut </span>XtAppContext, _7: <span class="kw-2">*const </span>c_char, _6: XrmOptionDescList, _5: c_uint, _4: <span class="kw-2">*mut </span>c_int, _3: <span class="kw-2">*mut *mut </span>c_char, _2: <span class="kw-2">*mut *mut </span>c_char, _1: WidgetClass) -&gt; Widget,
+  <span class="kw">pub fn </span>XtVaSetSubvalues (_3: <span class="kw-2">*mut </span>c_void, _2: <span class="kw-2">*mut </span>XtResource, _1: c_uint) -&gt; (),
+  <span class="kw">pub fn </span>XtVaSetValues (_1: Widget) -&gt; (),
+globals:
+}
+
+<span class="comment">//
+// types
+//
+
+// TODO structs
+</span><span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>Arg;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>SubstitutionRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_TranslationData;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_WidgetClassRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_WidgetRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_XtActionsRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_XtAppStruct;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_XtCallbackRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_XtCheckpointTokenRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>XtConvertArgRec;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>_XtResource;
+<span class="attribute">#[repr(C)]
+</span><span class="kw">pub struct </span>XtWidgetGeometry;
+
+<span class="comment">// C enums
+</span><span class="kw">pub type </span>XtCallbackStatus = c_int;
+<span class="kw">pub type </span>XtGeometryResult = c_int;
+<span class="kw">pub type </span>XtGrabKind = c_int;
+<span class="kw">pub type </span>XtListPosition = c_int;
+
+<span class="attribute">#[allow(dead_code)]
+#[cfg(test)]
+#[repr(C)]
+</span><span class="kw">enum </span>TestEnum {
+    Variant1,
+    Variant2,
+}
+
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>enum_size_test() {
+    <span class="macro">assert!</span>(::std::mem::size_of::&lt;TestEnum&gt;() == ::std::mem::size_of::&lt;c_int&gt;());
+}
+
+<span class="comment">// struct typedefs
+</span><span class="kw">pub type </span>ArgList = <span class="kw-2">*mut </span>Arg;
+<span class="kw">pub type </span>Substitution = <span class="kw-2">*mut </span>SubstitutionRec;
+<span class="kw">pub type </span>Widget = <span class="kw-2">*mut </span>_WidgetRec;
+<span class="kw">pub type </span>WidgetClass = <span class="kw-2">*mut </span>_WidgetClassRec;
+<span class="kw">pub type </span>XtAccelerators = <span class="kw-2">*mut </span>_TranslationData;
+<span class="kw">pub type </span>XtActionList = <span class="kw-2">*mut </span>_XtActionsRec;
+<span class="kw">pub type </span>XtActionsRec = _XtActionsRec;
+<span class="kw">pub type </span>XtAppContext = <span class="kw-2">*mut </span>_XtAppStruct;
+<span class="kw">pub type </span>XtCallbackList = <span class="kw-2">*mut </span>_XtCallbackRec;
+<span class="kw">pub type </span>XtCallbackRec = _XtCallbackRec;
+<span class="kw">pub type </span>XtCheckpointToken = <span class="kw-2">*mut </span>_XtCheckpointTokenRec;
+<span class="kw">pub type </span>XtCheckpointTokenRec = _XtCheckpointTokenRec;
+<span class="kw">pub type </span>XtConvertArgList = <span class="kw-2">*mut </span>XtConvertArgRec;
+<span class="kw">pub type </span>XtResource = _XtResource;
+<span class="kw">pub type </span>XtResourceList = <span class="kw-2">*mut </span>_XtResource;
+<span class="kw">pub type </span>XtTranslations = <span class="kw-2">*mut </span>_TranslationData;
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="x11_dl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0 (69f9c33d7 2022-12-12)" ></div></body></html>

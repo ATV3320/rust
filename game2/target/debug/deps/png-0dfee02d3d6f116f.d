@@ -1,0 +1,16 @@
+/home/atv/Documents/GitHub/rust/game2/target/debug/deps/png-0dfee02d3d6f116f.rmeta: /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/lib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/chunk.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/common.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/mod.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/stream.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/zlib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/encoder.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/filter.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/srgb.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/text_metadata.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/traits.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/utils.rs
+
+/home/atv/Documents/GitHub/rust/game2/target/debug/deps/png-0dfee02d3d6f116f.d: /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/lib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/chunk.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/common.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/mod.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/stream.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/zlib.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/encoder.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/filter.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/srgb.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/text_metadata.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/traits.rs /home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/utils.rs
+
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/lib.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/chunk.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/common.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/mod.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/stream.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/decoder/zlib.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/encoder.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/filter.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/srgb.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/text_metadata.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/traits.rs:
+/home/atv/.cargo/registry/src/github.com-1ecc6299db9ec823/png-0.17.7/src/utils.rs:
