@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["rectangle","A module that contains functions and objects relating to rectangles"]]};

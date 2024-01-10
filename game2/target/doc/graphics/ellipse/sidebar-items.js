@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Border","Ellipse border"],["Ellipse","An ellipse with filled color"]]};

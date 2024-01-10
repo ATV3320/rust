@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["draw_many","Draws many images."]],"struct":[["Image","An image"]]};

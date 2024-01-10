@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["FontConfig","Represents the main fontconfig config file"]]};

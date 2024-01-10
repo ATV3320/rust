@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["rusttype","Glyph caching using the RustType library."]]};

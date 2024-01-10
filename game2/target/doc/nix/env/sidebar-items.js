@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["clearenv","Clear the environment of all name-value pairs."]]};

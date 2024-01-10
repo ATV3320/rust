@@ -1,4 +1,0 @@
-memory management: 
-https://youtu.be/-6cnnNlAvNk?list=PLzMcBGfZo4-nyLTlSRBvo0zjSnCnqjHYQ
-Tech w Tim video for memory management, heap and stack.
-

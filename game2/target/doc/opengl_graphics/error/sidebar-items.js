@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error","An enum to represent various possible run-time errors that may occur."]]};

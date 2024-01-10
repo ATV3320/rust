@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["ATLAS_SIZE","The minimum atlas size."]],"struct":[["GlyphCache","A struct used for caching rendered font."]]};
